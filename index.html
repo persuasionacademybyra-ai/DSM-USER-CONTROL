@@ -1916,6 +1916,10 @@ tr.expand-row td {
         <span class="sidebar-item-icon">📊</span>
         <span>Analytics</span>
       </div>
+       <div class="sidebar-item" onclick="setSection('visitors')">
+  <span class="sidebar-item-icon">👁</span>
+  <span>Visitor Analytics</span>
+</div>
       <div class="sidebar-item" onclick="setSection('activity')">
         <span class="sidebar-item-icon">⚡</span>
         <span>Activity Log</span>
@@ -2501,7 +2505,7 @@ function setSection(name, el) {
   if (nameEl) nameEl.textContent = SECTION_NAMES[name] || name;
 
   // Hide all section panels
-  const sections = ['section-keys','section-analytics','section-activity','section-flagged'];
+  const sections = ['section-keys','section-analytics','section-visitors','section-activity','section-flagged'];
   sections.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -2519,6 +2523,10 @@ function setSection(name, el) {
     document.getElementById('section-flagged').style.display = '';
     renderFlaggedSection2();
   }
+   else if (name === 'visitors') {
+  document.getElementById('section-visitors').style.display = '';
+  renderVisitorAnalytics();
+}
 }
 
 /* ════════════════════════════════════════════
@@ -3162,5 +3170,1097 @@ window.doLogout = function() {
 };
 
 </script>
+<div id="section-visitors" style="display:none;">
+
+  <div class="section-page-header">
+    <div class="section-page-title">Visitor Analytics</div>
+    <div class="section-page-sub">Real-time website intelligence — sessions, behavior &amp; conversions</div>
+  </div>
+
+  <!-- ── Connect Bar ── -->
+  <div class="v3-connect-bar">
+    <div class="v3-connect-label">Analytics API</div>
+    <input id="va-url-input" type="text" placeholder="Paste your Google Apps Script URL…" class="v3-connect-input" />
+    <button onclick="connectVisitorAnalytics()" class="v3-connect-btn">CONNECT</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="v3-dot" id="va-dot"></div>
+      <span id="va-status" class="v3-status-text">Not connected</span>
+    </div>
+  </div>
+
+  <!-- ── Date Filters ── -->
+  <div class="v3-filter-row">
+    <button class="v3-pill active" onclick="setVAFilter('today',this)">Today</button>
+    <button class="v3-pill" onclick="setVAFilter('7d',this)">7 Days</button>
+    <button class="v3-pill" onclick="setVAFilter('30d',this)">30 Days</button>
+    <button class="v3-pill" onclick="setVAFilter('all',this)">All Time</button>
+    <button onclick="loadVisitorData()" class="v3-refresh-btn">↻ Refresh</button>
+    <span id="v3-last-updated" style="margin-left:8px;font-size:10px;color:var(--dimmed,#4b5563);"></span>
+  </div>
+
+  <!-- ── AI Insights ── -->
+  <div id="va2-insights"></div>
+
+  <!-- ── KPI Row ── -->
+  <div class="v3-kpi-grid">
+    <div class="v3-kpi" style="--kc:#60a5fa;">
+      <div class="v3-kpi-ico">◈</div>
+      <div class="v3-kpi-label">Sessions</div>
+      <div class="v3-kpi-value" style="color:#60a5fa;" id="va-kpi-sessions">—</div>
+      <div class="v3-kpi-sub" id="va-kpi-sessions-sub">waiting for data</div>
+    </div>
+    <div class="v3-kpi" style="--kc:#a78bfa;">
+      <div class="v3-kpi-ico">◉</div>
+      <div class="v3-kpi-label">Unique Visitors</div>
+      <div class="v3-kpi-value" style="color:#a78bfa;" id="va-kpi-visitors">—</div>
+      <div class="v3-kpi-sub" id="va-kpi-visitors-sub"></div>
+    </div>
+    <div class="v3-kpi" style="--kc:#C9A84C;">
+      <div class="v3-kpi-ico">◷</div>
+      <div class="v3-kpi-label">Avg Time on Page</div>
+      <div class="v3-kpi-value" style="color:#C9A84C;" id="va-kpi-time">—</div>
+      <div class="v3-kpi-sub" id="va-kpi-time-sub"></div>
+    </div>
+    <div class="v3-kpi" style="--kc:#4ade80;">
+      <div class="v3-kpi-ico">◎</div>
+      <div class="v3-kpi-label">CTA Click Rate</div>
+      <div class="v3-kpi-value" style="color:#4ade80;" id="va-kpi-cta">—</div>
+      <div class="v3-kpi-sub" id="va-kpi-cta-sub"></div>
+    </div>
+    <div class="v3-kpi" style="--kc:#f472b6;">
+      <div class="v3-kpi-ico">▣</div>
+      <div class="v3-kpi-label">Instagram Traffic</div>
+      <div class="v3-kpi-value" style="color:#f472b6;" id="va-kpi-ig">—</div>
+      <div class="v3-kpi-sub" id="va-kpi-ig-sub"></div>
+    </div>
+    <div class="v3-kpi" style="--kc:#fbbf24;">
+      <div class="v3-kpi-ico">◬</div>
+      <div class="v3-kpi-label">Avg Scroll Depth</div>
+      <div class="v3-kpi-value" style="color:#fbbf24;" id="va-kpi-scroll">—</div>
+      <div class="v3-kpi-sub" id="va-kpi-scroll-sub"></div>
+    </div>
+  </div>
+
+  <!-- ── Instagram Bio Panel (NEW) ── -->
+  <div class="v3-section-label">Instagram bio intelligence</div>
+  <div class="v3-ig-panel" id="v3-ig-panel">
+    <div class="v3-ig-header">
+      <div>
+        <div class="v3-ig-title">Instagram Bio Link Performance</div>
+        <div class="v3-ig-sub">Visitors arriving from your link-in-bio</div>
+      </div>
+      <div class="v3-ig-badge" id="v3-ig-badge">0 sessions</div>
+    </div>
+    <div class="v3-ig-stats">
+      <div class="v3-ig-stat">
+        <div class="v3-ig-stat-val" id="ig-avg-time">—</div>
+        <div class="v3-ig-stat-lbl">avg time</div>
+      </div>
+      <div class="v3-ig-divider"></div>
+      <div class="v3-ig-stat">
+        <div class="v3-ig-stat-val" id="ig-avg-scroll">—</div>
+        <div class="v3-ig-stat-lbl">avg scroll</div>
+      </div>
+      <div class="v3-ig-divider"></div>
+      <div class="v3-ig-stat">
+        <div class="v3-ig-stat-val" id="ig-cta-rate">—</div>
+        <div class="v3-ig-stat-lbl">CTA rate</div>
+      </div>
+      <div class="v3-ig-divider"></div>
+      <div class="v3-ig-stat">
+        <div class="v3-ig-stat-val" id="ig-device-split">—</div>
+        <div class="v3-ig-stat-lbl">mobile share</div>
+      </div>
+      <div class="v3-ig-divider"></div>
+      <div class="v3-ig-stat">
+        <div class="v3-ig-stat-val" id="ig-new-pct">—</div>
+        <div class="v3-ig-stat-lbl">new visitors</div>
+      </div>
+    </div>
+    <div style="padding:0 20px 16px;">
+      <div class="v3-ig-funnel-label">Instagram bio → conversion funnel</div>
+      <div id="v3-ig-funnel"><div class="v3-placeholder">Connect analytics to view Instagram funnel</div></div>
+    </div>
+  </div>
+
+  <!-- ── Timeline ── -->
+  <div class="v3-section-label" style="margin-top:24px;">Sessions timeline (last 14 days)</div>
+  <div class="v3-card" style="margin-bottom:20px;">
+    <div class="v3-card-header">
+      <span class="v3-card-title">Daily sessions</span>
+      <span id="va2-timeline-peak" class="v3-card-meta"></span>
+    </div>
+    <div class="v3-card-body">
+      <div style="display:flex;align-items:flex-end;gap:4px;height:88px;padding:0 2px;" id="va-timeline-bars">
+        <div class="v3-placeholder">Connect analytics to view timeline</div>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:8px;" id="va-timeline-labels"></div>
+    </div>
+  </div>
+
+  <!-- ── Acquisition Row ── -->
+  <div class="v3-section-label">Acquisition &amp; audience</div>
+  <div class="v3-grid-3" style="margin-bottom:20px;">
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Traffic sources</span></div>
+      <div class="v3-card-body" id="va-sources"><div class="v3-placeholder">—</div></div>
+    </div>
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Device breakdown</span></div>
+      <div class="v3-card-body" id="va-devices"><div class="v3-placeholder">—</div></div>
+    </div>
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Top countries</span></div>
+      <div class="v3-card-body" id="va-countries"><div class="v3-placeholder">—</div></div>
+    </div>
+  </div>
+
+  <!-- ── Source Quality + Best Hours ── -->
+  <div class="v3-section-label">Source quality &amp; timing</div>
+  <div class="v3-grid-2" style="margin-bottom:20px;">
+    <div class="v3-card">
+      <div class="v3-card-header">
+        <span class="v3-card-title">Conversion rate by source</span>
+        <span class="v3-card-meta">CTA clicks ÷ sessions</span>
+      </div>
+      <div class="v3-card-body" id="v3-source-quality"><div class="v3-placeholder">—</div></div>
+    </div>
+    <div class="v3-card">
+      <div class="v3-card-header">
+        <span class="v3-card-title">Best hours to post</span>
+        <span class="v3-card-meta">Peak session times</span>
+      </div>
+      <div class="v3-card-body" id="v3-best-hours"><div class="v3-placeholder">—</div></div>
+    </div>
+  </div>
+
+  <!-- ── Conversion Funnel ── -->
+  <div class="v3-section-label">Conversion funnel</div>
+  <div class="v3-grid-2" style="margin-bottom:20px;">
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Visitor → conversion funnel</span></div>
+      <div class="v3-card-body" id="va2-funnel"><div class="v3-placeholder">—</div></div>
+    </div>
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Scroll depth funnel</span></div>
+      <div class="v3-card-body" id="va-scroll-funnel"><div class="v3-placeholder">—</div></div>
+    </div>
+  </div>
+
+  <!-- ── Engagement Row ── -->
+  <div class="v3-section-label">Engagement &amp; behavior</div>
+  <div class="v3-grid-3" style="margin-bottom:20px;">
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Time per section (avg)</span></div>
+      <div class="v3-card-body" id="va-section-time"><div class="v3-placeholder">—</div></div>
+    </div>
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">CTA click breakdown</span></div>
+      <div class="v3-card-body" id="va-cta-breakdown"><div class="v3-placeholder">—</div></div>
+    </div>
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Exit intent analysis</span></div>
+      <div class="v3-card-body" id="va-exit-analysis"><div class="v3-placeholder">—</div></div>
+    </div>
+  </div>
+
+  <!-- ── Alerts Row ── -->
+  <div class="v3-section-label">Alerts &amp; friction</div>
+  <div class="v3-grid-2" style="margin-bottom:20px;">
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Rage clicks &amp; friction points</span></div>
+      <div class="v3-card-body" id="va-rage-clicks"><div class="v3-placeholder">—</div></div>
+    </div>
+    <div class="v3-card">
+      <div class="v3-card-header"><span class="v3-card-title">Browser distribution</span></div>
+      <div class="v3-card-body" id="va2-browsers"><div class="v3-placeholder">—</div></div>
+    </div>
+  </div>
+
+  <!-- ── Sessions Table ── -->
+  <div class="v3-section-label">Recent sessions</div>
+  <div class="v3-card" style="margin-bottom:32px;">
+    <div class="v3-card-header">
+      <span class="v3-card-title">Last 30 sessions</span>
+      <span id="va2-session-count" class="v3-card-meta"></span>
+    </div>
+    <div class="table-scroll">
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th class="v3-th">Time</th>
+            <th class="v3-th">Page</th>
+            <th class="v3-th">Country</th>
+            <th class="v3-th">Device</th>
+            <th class="v3-th">Source</th>
+            <th class="v3-th">Duration</th>
+            <th class="v3-th">Scroll</th>
+            <th class="v3-th">Type</th>
+          </tr>
+        </thead>
+        <tbody id="va-sessions-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--dimmed,#4b5563);">Connect analytics to view sessions</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /section-visitors -->
+<style>
+/* ─── v3 Root tokens ─── */
+:root {
+  --v3-gold: #C9A84C;
+  --v3-gold-dim: rgba(201,168,76,0.12);
+  --v3-gold-border: rgba(201,168,76,0.28);
+  --v3-bg2: #0f1623;
+  --v3-bg3: #161e2e;
+  --v3-bg4: #1c2538;
+  --v3-border: rgba(255,255,255,0.07);
+  --v3-muted: #6b7280;
+  --v3-text: #e5e7eb;
+  --v3-ig: #f472b6;
+  --v3-ig-dim: rgba(244,114,182,0.10);
+  --v3-ig-border: rgba(244,114,182,0.28);
+}
+
+/* ─── Connect bar ─── */
+.v3-connect-bar {
+  background: var(--v3-bg2, #0f1623);
+  border: 1px solid var(--v3-gold-border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 20px;
+  position: relative;
+}
+.v3-connect-label {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--v3-gold);
+  white-space: nowrap;
+}
+.v3-connect-input {
+  flex: 1; min-width: 260px;
+  background: var(--v3-bg4, #1c2538);
+  border: 1px solid var(--v3-border);
+  color: var(--v3-text, #e5e7eb);
+  padding: 9px 14px; font-size: 12px; border-radius: 6px; outline: none;
+  transition: border-color 0.2s;
+}
+.v3-connect-input:focus { border-color: var(--v3-gold-border); }
+.v3-connect-btn {
+  background: var(--v3-gold); color: #080e1a;
+  border: none; padding: 9px 22px;
+  font-size: 11px; font-weight: 900; letter-spacing: 0.10em;
+  border-radius: 6px; cursor: pointer; white-space: nowrap;
+  transition: transform 0.1s, opacity 0.15s;
+}
+.v3-connect-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.v3-connect-btn:active { transform: translateY(0); }
+.v3-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--v3-muted, #6b7280); flex-shrink: 0;
+  transition: background 0.3s;
+}
+.v3-dot.v3-ok { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.4); }
+.v3-dot.v3-loading { background: #fbbf24; animation: v3pulse 1s infinite; }
+.v3-dot.v3-error { background: #f87171; }
+.v3-status-text { font-size: 11px; color: var(--v3-muted); transition: color 0.3s; }
+@keyframes v3pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ─── Filters ─── */
+.v3-filter-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 22px; align-items: center;
+}
+.v3-pill {
+  background: var(--v3-bg3, #161e2e);
+  border: 1px solid var(--v3-border);
+  color: var(--v3-muted, #6b7280);
+  padding: 6px 16px; font-size: 10px; font-weight: 800;
+  border-radius: 24px; cursor: pointer;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  transition: all 0.15s;
+}
+.v3-pill:hover, .v3-pill.active {
+  background: var(--v3-gold-dim);
+  border-color: var(--v3-gold-border);
+  color: var(--v3-gold);
+}
+.v3-refresh-btn {
+  margin-left: auto;
+  background: var(--v3-bg3, #161e2e);
+  border: 1px solid var(--v3-border);
+  color: var(--v3-gold);
+  padding: 6px 16px; font-size: 10px; font-weight: 800;
+  border-radius: 6px; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.v3-refresh-btn:hover { opacity: 0.75; transform: rotate(90deg); }
+
+/* ─── KPI Grid ─── */
+.v3-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px; margin-bottom: 24px;
+}
+.v3-kpi {
+  background: var(--v3-bg2, #0f1623);
+  border: 1px solid var(--v3-border);
+  border-radius: 10px; padding: 18px 18px 14px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.v3-kpi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--kc, transparent);
+  opacity: 0.8;
+}
+.v3-kpi:hover { border-color: rgba(255,255,255,0.14); transform: translateY(-2px); }
+.v3-kpi-ico { font-size: 11px; color: var(--kc, #666); margin-bottom: 10px; opacity: 0.7; }
+.v3-kpi-label { font-size: 9px; color: var(--v3-muted,#6b7280); font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 10px; }
+.v3-kpi-value { font-size: 34px; font-weight: 800; color: var(--v3-text,#e5e7eb); line-height: 1; margin-bottom: 7px; font-variant-numeric: tabular-nums; }
+.v3-kpi-sub { font-size: 10px; color: var(--v3-muted,#6b7280); }
+
+/* ─── Instagram Bio Panel ─── */
+.v3-ig-panel {
+  background: var(--v3-bg2, #0f1623);
+  border: 1px solid var(--v3-ig-border);
+  border-radius: 12px; overflow: hidden;
+  margin-bottom: 0;
+  position: relative;
+}
+.v3-ig-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #f472b6, #c084fc, #f472b6);
+  background-size: 200% auto;
+  animation: igshine 3s linear infinite;
+}
+@keyframes igshine { 0%{background-position:0%} 100%{background-position:200%} }
+.v3-ig-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--v3-ig-border);
+}
+.v3-ig-title { font-size: 13px; font-weight: 800; color: var(--v3-ig); letter-spacing: 0.03em; margin-bottom: 3px; }
+.v3-ig-sub { font-size: 11px; color: var(--v3-muted,#6b7280); }
+.v3-ig-badge {
+  background: var(--v3-ig-dim); color: var(--v3-ig);
+  border: 1px solid var(--v3-ig-border);
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.v3-ig-stats {
+  display: flex; align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--v3-ig-border);
+  flex-wrap: wrap; gap: 0;
+}
+.v3-ig-stat { flex: 1; text-align: center; min-width: 80px; padding: 6px 0; }
+.v3-ig-stat-val { font-size: 22px; font-weight: 800; color: var(--v3-ig); margin-bottom: 4px; }
+.v3-ig-stat-lbl { font-size: 9px; font-weight: 700; color: var(--v3-muted,#6b7280); text-transform: uppercase; letter-spacing: 0.1em; }
+.v3-ig-divider { width: 1px; align-self: stretch; background: var(--v3-ig-border); margin: 0 4px; }
+.v3-ig-funnel-label { font-size: 9px; font-weight: 800; color: var(--v3-muted,#6b7280); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; }
+
+/* ─── Section label ─── */
+.v3-section-label {
+  font-size: 9px; font-weight: 800; color: var(--v3-muted,#6b7280);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  margin-bottom: 13px;
+  display: flex; align-items: center; gap: 12px;
+}
+.v3-section-label::after { content: ''; flex: 1; height: 1px; background: var(--v3-border); }
+
+/* ─── Cards ─── */
+.v3-card {
+  background: var(--v3-bg2, #0f1623);
+  border: 1px solid var(--v3-border);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.v3-card:hover { border-color: rgba(255,255,255,0.12); }
+.v3-card-header {
+  padding: 15px 18px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.v3-card-title { font-size: 10px; font-weight: 800; color: var(--v3-muted,#6b7280); letter-spacing: 0.09em; text-transform: uppercase; }
+.v3-card-meta { font-size: 9px; color: #374151; }
+.v3-card-body { padding: 0 18px 16px; }
+
+/* ─── Grids ─── */
+.v3-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.v3-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 1100px) { .v3-grid-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) { .v3-grid-2, .v3-grid-3 { grid-template-columns: 1fr; } }
+
+/* ─── Bars ─── */
+.va2-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 11px; }
+.va2-bar-label { width: 120px; color: var(--v3-muted,#6b7280); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+.va2-bar-track { flex: 1; height: 5px; background: var(--v3-bg4, #1c2538); border-radius: 3px; overflow: hidden; }
+.va2-bar-fill { height: 100%; border-radius: 3px; width: 0; transition: width 0.75s cubic-bezier(0.4,0,0.2,1); }
+.va2-bar-val { width: 40px; text-align: right; color: #374151; font-variant-numeric: tabular-nums; font-size: 11px; }
+
+/* ─── Source quality rows ─── */
+.v3-sq-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--v3-border);
+  font-size: 11px;
+}
+.v3-sq-row:last-child { border-bottom: none; }
+.v3-sq-name { flex: 1; color: var(--v3-muted,#6b7280); text-transform: capitalize; }
+.v3-sq-sessions { font-size: 10px; color: #374151; width: 56px; text-align: center; }
+.v3-sq-rate { font-size: 12px; font-weight: 800; width: 48px; text-align: right; }
+
+/* ─── Hour heat cells ─── */
+.v3-hour-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.v3-hour-cell {
+  width: 28px; height: 28px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 700; color: #374151;
+  background: var(--v3-bg4, #1c2538);
+  transition: transform 0.15s;
+  cursor: default;
+}
+.v3-hour-cell:hover { transform: scale(1.15); z-index: 1; }
+.v3-hour-legend { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+.v3-hour-legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
+.v3-hour-legend-txt { font-size: 9px; color: var(--v3-muted,#6b7280); }
+
+/* ─── List ─── */
+.va2-list-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--v3-border); }
+.va2-list-item:last-child { border-bottom: none; }
+.va2-list-rank { font-size: 9px; color: var(--v3-muted,#6b7280); width: 18px; text-align: right; flex-shrink: 0; }
+.va2-list-name { font-size: 11px; color: var(--v3-muted,#6b7280); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.va2-list-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 800; flex-shrink: 0; }
+.va2-tag-gold { background: var(--v3-gold-dim); color: var(--v3-gold); border: 1px solid var(--v3-gold-border); }
+.va2-tag-green { background: rgba(74,222,128,0.10); color: #4ade80; }
+.va2-tag-blue { background: rgba(96,165,250,0.10); color: #60a5fa; }
+.va2-tag-amber { background: rgba(251,191,36,0.10); color: #fbbf24; }
+.va2-tag-muted { background: var(--v3-bg4,#1c2538); color: var(--v3-muted,#6b7280); }
+.va2-tag-pink { background: rgba(244,114,182,0.10); color: #f472b6; }
+
+/* ─── Timeline bars ─── */
+.va2-tbar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.va2-tbar { width: 100%; background: rgba(201,168,76,0.22); border-radius: 3px 3px 0 0; min-height: 2px; cursor: pointer; transition: background 0.2s; }
+.va2-tbar:hover { background: rgba(201,168,76,0.6); }
+.va2-tbar-count { font-size: 8px; color: var(--v3-muted,#6b7280); }
+.va2-tbar-label { font-size: 8px; color: var(--v3-muted,#6b7280); }
+
+/* ─── Funnel ─── */
+.va2-funnel-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.va2-funnel-name { font-size: 11px; color: var(--v3-muted,#6b7280); width: 130px; flex-shrink: 0; }
+.va2-funnel-track { flex: 1; height: 26px; background: var(--v3-bg4,#1c2538); border-radius: 4px; overflow: hidden; }
+.va2-funnel-bar { height: 100%; display: flex; align-items: center; padding: 0 10px; width: 0; transition: width 0.75s cubic-bezier(0.4,0,0.2,1); }
+.va2-funnel-count { font-size: 11px; font-weight: 800; white-space: nowrap; }
+.va2-funnel-pct { width: 40px; text-align: right; font-size: 10px; color: var(--v3-muted,#6b7280); flex-shrink: 0; }
+
+/* ─── Insights ─── */
+.va2-insight {
+  background: rgba(201,168,76,0.04);
+  border: 1px solid var(--v3-gold-border);
+  border-radius: 10px; padding: 14px 18px;
+  display: flex; gap: 14px; align-items: flex-start;
+  margin-bottom: 10px;
+}
+.va2-insight-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.va2-insight-title { font-size: 12px; font-weight: 800; color: var(--v3-gold); margin-bottom: 4px; }
+.va2-insight-text { font-size: 11px; color: var(--v3-muted,#6b7280); line-height: 1.55; }
+
+/* ─── Badges ─── */
+.va2-new { background: rgba(74,222,128,0.10); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; }
+.va2-ret { background: var(--v3-bg4,#1c2538); color: var(--v3-muted,#6b7280); padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; }
+
+/* ─── Table ─── */
+.v3-th {
+  text-align: left; padding: 8px 12px;
+  color: var(--v3-muted,#6b7280); font-weight: 800;
+  font-size: 9px; letter-spacing: 0.11em; text-transform: uppercase;
+  border-bottom: 1px solid var(--v3-border);
+}
+#va-sessions-tbody tr { transition: background 0.1s; }
+#va-sessions-tbody tr:hover td { background: var(--v3-bg3, #161e2e); }
+#va-sessions-tbody td { border-bottom: 1px solid var(--v3-border); }
+#va-sessions-tbody tr:last-child td { border-bottom: none; }
+.v3-placeholder { color: var(--v3-muted,#6b7280); font-size: 12px; text-align: center; padding: 28px; }
+</style>
+<script>
+/* ════════════════════════════════════════════════════════
+   VISITOR ANALYTICS ENGINE v3
+   Set VISITOR_ANALYTICS_URL after deploying Apps Script.
+   NEW: Instagram bio tracking, source quality, best hours
+════════════════════════════════════════════════════════ */
+
+let VISITOR_ANALYTICS_URL = '';
+try { VISITOR_ANALYTICS_URL = localStorage.getItem('dsm_va_url') || ''; } catch(e) {}
+let vaFilter = 'today';
+let vaData = { sessions:[], events:[], cta:[], scroll:[], sections:[], exits:[], rage:[], daily:[] };
+
+/* ── Connect ────────────────────────────────────────── */
+function connectVisitorAnalytics() {
+  const url = (document.getElementById('va-url-input')||{}).value?.trim();
+  if (!url || !/^https:\/\/script\.(google|googleusercontent)\.com\//.test(url)) {
+    va2Status('error', '✗ Enter a valid Apps Script URL');
+    return;
+  }
+  VISITOR_ANALYTICS_URL = url;
+  try { localStorage.setItem('dsm_va_url', url); } catch(e) {}
+  loadVisitorData();
+}
+
+function renderVisitorAnalytics() {
+  if (VISITOR_ANALYTICS_URL) {
+    const inp = document.getElementById('va-url-input');
+    if (inp) inp.value = VISITOR_ANALYTICS_URL;
+    loadVisitorData();
+  }
+}
+
+function va2Status(type, msg) {
+  const dot = document.getElementById('va-dot');
+  const txt = document.getElementById('va-status');
+  if (dot) { dot.className = 'v3-dot v3-' + type; }
+  if (txt) { txt.textContent = msg; txt.style.color = type==='ok'?'#4ade80':type==='loading'?'#fbbf24':'#f87171'; }
+}
+
+/* ── Date filter ───────────────────────────────────── */
+function setVAFilter(f, btn) {
+  vaFilter = f;
+  document.querySelectorAll('.v3-pill').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderVACharts();
+}
+
+function filterByDate(rows) {
+  if (vaFilter === 'all') return rows;
+  const now = Date.now();
+  const cutoff = vaFilter === 'today' ? new Date().setHours(0,0,0,0)
+               : vaFilter === '7d'    ? now - 7*864e5 : now - 30*864e5;
+  return rows.filter(r => new Date(r[0]||r.Timestamp||'').getTime() >= cutoff);
+}
+
+/* ── JSONP loader ──────────────────────────────────── */
+let _vaJSONPctr = 0;
+function vaJsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cb = '__va3_' + (++_vaJSONPctr);
+    const timer = setTimeout(() => { delete window[cb]; reject(new Error('Timeout')); }, 15000);
+    window[cb] = data => {
+      clearTimeout(timer); delete window[cb];
+      try { document.getElementById('_vas_'+cb)?.remove(); } catch(e) {}
+      resolve(Array.isArray(data) ? data : (data.rows || []));
+    };
+    const qs = Object.entries({...params, callback: cb})
+      .map(([k,v]) => encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
+    const s = document.createElement('script');
+    s.id = '_vas_'+cb; s.src = VISITOR_ANALYTICS_URL+'?'+qs;
+    s.onerror = () => { clearTimeout(timer); delete window[cb]; s.remove(); reject(new Error('Load failed')); };
+    document.head.appendChild(s);
+  });
+}
+
+/* ── Load all data ────────────────────────────────── */
+async function loadVisitorData() {
+  if (!VISITOR_ANALYTICS_URL) return;
+  va2Status('loading', 'Loading data…');
+  try {
+    const [sessions,events,cta,scroll,sections,exits,rage,daily] = await Promise.all([
+      vaJsonp({action:'dump',sheet:'Sessions'}),
+      vaJsonp({action:'dump',sheet:'Events'}),
+      vaJsonp({action:'dump',sheet:'CTAClicks'}),
+      vaJsonp({action:'dump',sheet:'ScrollDepth'}),
+      vaJsonp({action:'dump',sheet:'SectionTime'}),
+      vaJsonp({action:'dump',sheet:'ExitIntent'}),
+      vaJsonp({action:'dump',sheet:'RageClicks'}),
+      vaJsonp({action:'dump',sheet:'DailySummary'}),
+    ]);
+    vaData = {sessions,events,cta,scroll,sections,exits,rage,daily};
+    va2Status('ok', '✓ ' + sessions.length + ' total sessions');
+    const upd = document.getElementById('v3-last-updated');
+    if (upd) upd.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    renderVACharts();
+  } catch(err) {
+    va2Status('error', '✗ ' + err.message);
+  }
+}
+
+/* ── Master render ───────────────────────────────── */
+function renderVACharts() {
+  const S  = filterByDate(vaData.sessions || []);
+  const C  = filterByDate(vaData.cta      || []);
+  const SC = filterByDate(vaData.scroll   || []);
+  const SE = filterByDate(vaData.sections || []);
+  const EX = filterByDate(vaData.exits    || []);
+  const RA = filterByDate(vaData.rage     || []);
+  const DL = vaData.daily || [];
+
+  va2RenderKPIs(S, C, SC, EX);
+  v3RenderInstagramPanel(S, C, SC, EX);
+  va2RenderTimeline(DL);
+  va2RenderSources(S);
+  va2RenderDevices(S);
+  va2RenderCountries(S);
+  v3RenderSourceQuality(S, C);
+  v3RenderBestHours(S);
+  va2RenderFunnel(S, C, SC, EX);
+  va2RenderScrollFunnel(SC);
+  va2RenderSectionTime(SE);
+  va2RenderCTABreakdown(C);
+  va2RenderExitAnalysis(EX);
+  va2RenderRageClicks(RA);
+  va2RenderBrowsers(S);
+  va2RenderSessionsTable(S);
+  va2RenderInsights(S, C, SC, EX, RA);
+}
+
+/* ── KPIs ───────────────────────────────────────── */
+function va2RenderKPIs(S,C,SC,EX) {
+  const uniq = new Set(S.map(r=>r[2]||r.VisitorID)).size;
+  const newV = S.filter(r=>(r[11]||r.IsNew)==='yes').length;
+  const times = S.map(r=>parseInt(r[15]||r.TotalSeconds||0,10)).filter(n=>n>0);
+  const avgT = times.length ? Math.round(times.reduce((a,b)=>a+b,0)/times.length) : 0;
+  const scVals = SC.map(r=>parseInt(String(r[4]||r.Depth||'0').replace('%',''),10)).filter(n=>!isNaN(n));
+  const avgSc = scVals.length ? Math.round(scVals.reduce((a,b)=>a+b,0)/scVals.length) : 0;
+  const ctr = S.length ? (C.length/S.length*100).toFixed(1) : '0.0';
+  const igS = S.filter(r=>isInstagram(r[10]||r.RefSource||''));
+  const igPct = S.length ? Math.round(igS.length/S.length*100) : 0;
+
+  va2set('va-kpi-sessions', S.length);
+  va2set('va-kpi-sessions-sub', newV+' new · '+(uniq-newV)+' returning');
+  va2set('va-kpi-visitors', uniq);
+  va2set('va-kpi-visitors-sub', Math.round(newV/Math.max(uniq,1)*100)+'% first-time');
+  va2set('va-kpi-time', va2fmt(avgT));
+  va2set('va-kpi-time-sub', times.length+' sessions tracked');
+  va2set('va-kpi-cta', ctr+'%');
+  va2set('va-kpi-cta-sub', C.length+' total CTA clicks');
+  va2set('va-kpi-ig', igS.length);
+  va2set('va-kpi-ig-sub', igPct+'% of all traffic');
+  va2set('va-kpi-scroll', avgSc+'%');
+  va2set('va-kpi-scroll-sub', scVals.length+' depth events');
+}
+
+/* ── Instagram detection helper ─────────────────── */
+function isInstagram(src) {
+  // Only match Instagram specifically — not all social traffic (Twitter, Facebook, LinkedIn, etc.)
+  return /instagram/i.test(src) || (src === 'social' && false);
+  // Note: if your tracker records all IG traffic as generic "social", change to:
+  // return /instagram/i.test(src);
+  // and tag your bio link with ?utm_source=instagram&utm_medium=bio (see INSTAGRAM SETUP above)
+}
+
+/* ── Strict Instagram detection (bio-tagged only) ── */
+function isInstagramStrict(src) {
+  return /instagram/i.test(src);
+}
+
+/* ── Instagram Bio Panel (NEW) ──────────────────── */
+function v3RenderInstagramPanel(S, C, SC, EX) {
+  const igS = S.filter(r => isInstagram(r[10]||r.RefSource||''));
+  const badge = document.getElementById('v3-ig-badge');
+  if (badge) badge.textContent = igS.length + ' sessions';
+
+  if (!igS.length) {
+    va2set('ig-avg-time','—'); va2set('ig-avg-scroll','—');
+    va2set('ig-cta-rate','—'); va2set('ig-device-split','—'); va2set('ig-new-pct','—');
+    const f = document.getElementById('v3-ig-funnel');
+    if (f) f.innerHTML = '<div class="v3-placeholder">No Instagram traffic in this period. Add ?utm_source=instagram&utm_medium=bio to your bio link.</div>';
+    return;
+  }
+
+  const igVids = new Set(igS.map(r=>r[2]||r.VisitorID||''));
+  const igCtaVids = new Set(C.filter(r=>igVids.has(r[2]||r.VisitorID||'')).map(r=>r[2]||r.VisitorID||''));
+  const igTimes = igS.map(r=>parseInt(r[15]||0,10)).filter(n=>n>0);
+  const avgT = igTimes.length ? Math.round(igTimes.reduce((a,b)=>a+b,0)/igTimes.length) : 0;
+  const igScRows = SC.filter(r=>igVids.has(r[2]||r.VisitorID||''));
+  const igScVals = igScRows.map(r=>parseInt(String(r[4]||'0').replace('%',''),10)).filter(n=>!isNaN(n));
+  const avgSc = igScVals.length ? Math.round(igScVals.reduce((a,b)=>a+b,0)/igScVals.length) : 0;
+  const mobile = igS.filter(r=>/mobile/i.test(r[4]||r.Device||'')).length;
+  const newV = igS.filter(r=>(r[11]||r.IsNew)==='yes').length;
+  const ctrPct = igVids.size ? Math.round(igCtaVids.size/igVids.size*100) : 0;
+  const mPct = igS.length ? Math.round(mobile/igS.length*100) : 0;
+  const nPct = igS.length ? Math.round(newV/igS.length*100) : 0;
+
+  va2set('ig-avg-time', va2fmt(avgT));
+  va2set('ig-avg-scroll', avgSc+'%');
+  va2set('ig-cta-rate', ctrPct+'%');
+  va2set('ig-device-split', mPct+'%');
+  va2set('ig-new-pct', nPct+'%');
+
+  const igExReached = EX.filter(r=>igVids.has(r[2]||r.VisitorID||'') && (r[7]||r.ReachedPricing)==='yes').length;
+  const igEx = EX.filter(r=>igVids.has(r[2]||r.VisitorID||''));
+  const igScroll50 = igScRows.filter(r=>parseInt(String(r[4]||'0').replace('%',''),10)>=50).length;
+
+  const funnelEl = document.getElementById('v3-ig-funnel');
+  if (!funnelEl) return;
+  const stages = [
+    {name:'Arrived from IG', count: igS.length, color:'#f472b6'},
+    {name:'Scrolled 50%+',   count: igScroll50,  color:'#c084fc'},
+    {name:'Reached pricing', count: igExReached, color:'#C9A84C'},
+    {name:'Clicked CTA',     count: igCtaVids.size, color:'#4ade80'},
+  ];
+  funnelEl.innerHTML = stages.map(s => {
+    const pct = Math.round(s.count/Math.max(igS.length,1)*100);
+    return `<div class="va2-funnel-row">
+      <div class="va2-funnel-name">${s.name}</div>
+      <div class="va2-funnel-track">
+        <div class="va2-funnel-bar" style="background:${s.color}1a;border-left:3px solid ${s.color};width:0;" data-target="${pct}">
+          <span class="va2-funnel-count" style="color:${s.color};">${s.count}</span>
+        </div>
+      </div>
+      <div class="va2-funnel-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>{ funnelEl.querySelectorAll('.va2-funnel-bar').forEach(b=>{ b.style.width=b.dataset.target+'%'; }); }, 80);
+}
+
+/* ── Source Quality (NEW) ────────────────────────── */
+function v3RenderSourceQuality(S, C) {
+  const el = document.getElementById('v3-source-quality');
+  if (!el) return;
+  if (!S.length) { el.innerHTML = '<div class="v3-placeholder">—</div>'; return; }
+
+  const srcSessions = {};
+  // Build a fast VisitorID→source map (O(n)) instead of nested loop (O(n²))
+  const vidToSrc = {};
+  S.forEach(r => {
+    const vid = r[2]||r.VisitorID||'';
+    const src = r[10]||r.RefSource||'direct';
+    if (!vidToSrc[vid]) vidToSrc[vid] = src; // use first-seen source per visitor
+    srcSessions[src] = srcSessions[src] || [];
+    srcSessions[src].push(vid);
+  });
+  const srcCtaVids = {};
+  C.forEach(r => {
+    const vid = r[2]||r.VisitorID||'';
+    const src = vidToSrc[vid];
+    if (!src) return;
+    srcCtaVids[src] = srcCtaVids[src] || new Set();
+    srcCtaVids[src].add(vid);
+  });
+
+  const sourceColors = {direct:'#60a5fa',organic_search:'#4ade80',social:'#f472b6',referral:'#a78bfa',topmate:'#C9A84C'};
+  const rows = Object.entries(srcSessions)
+    .map(([src, vids]) => {
+      const uniqSess = new Set(vids).size;
+      const ctaUniq = srcCtaVids[src] ? srcCtaVids[src].size : 0;
+      const rate = uniqSess ? Math.round(ctaUniq/uniqSess*100) : 0;
+      return { src, sessions: uniqSess, rate };
+    })
+    .sort((a,b) => b.sessions - a.sessions);
+
+  const maxRate = Math.max(...rows.map(r=>r.rate), 1);
+  el.innerHTML = rows.map(r => {
+    const color = sourceColors[r.src] || '#888';
+    const rateColor = r.rate >= 5 ? '#4ade80' : r.rate >= 2 ? '#fbbf24' : '#f87171';
+    return `<div class="v3-sq-row">
+      <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+      <span class="v3-sq-name">${r.src.replace('_',' ')}</span>
+      <span class="v3-sq-sessions">${r.sessions} sess</span>
+      <span class="v3-sq-rate" style="color:${rateColor};">${r.rate}%</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── Best Hours (NEW) ────────────────────────────── */
+function v3RenderBestHours(S) {
+  const el = document.getElementById('v3-best-hours');
+  if (!el) return;
+  if (!S.length) { el.innerHTML='<div class="v3-placeholder">—</div>'; return; }
+
+  const hourCounts = {};
+  S.forEach(r => {
+    const ts = r[0]||r.Timestamp||'';
+    if (!ts) return;
+    const h = new Date(ts).getHours();
+    if (!isNaN(h)) hourCounts[h] = (hourCounts[h]||0) + 1;
+  });
+
+  const max = Math.max(...Object.values(hourCounts), 1);
+  const topHour = Object.entries(hourCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  const peakHourIndex = topHour ? parseInt(topHour[0], 10) : -1;
+  const cells = Array.from({length:24},(_,i) => {
+    const count = hourCounts[i] || 0;
+    const intensity = Math.round((count/max)*100);
+    const alpha = 0.08 + (intensity/100)*0.65;
+    const label = i===0?'12a':i<12?i+'a':i===12?'12p':(i-12)+'p';
+    const tip = `${label}: ${count} session${count!==1?'s':''}`;
+    // Fix: highlight only the actual peak hour by index, not by matching count value
+    const isPeak = i === peakHourIndex;
+    return `<div class="v3-hour-cell" style="background:rgba(201,168,76,${alpha.toFixed(2)});${isPeak?'box-shadow:0 0 0 1px rgba(201,168,76,0.6);':''}" title="${tip}">${label}</div>`;
+  }).join('');
+
+  const peakLabel = topHour ? (() => { const h=parseInt(topHour[0]); return (h===0?'12am':h<12?h+'am':h===12?'12pm':(h-12)+'pm'); })() : '—';
+
+  el.innerHTML = `
+    <div class="v3-hour-grid">${cells}</div>
+    <div style="margin-top:10px;font-size:10px;color:var(--v3-muted,#6b7280);">
+      Peak: <span style="color:var(--v3-gold);">${peakLabel}</span> (${topHour?topHour[1]:0} sessions)
+      · Darker = more traffic · Post 30 min before peak
+    </div>`;
+}
+
+/* ── Timeline ───────────────────────────────────── */
+function va2RenderTimeline(DL) {
+  const last14 = [...DL].slice(-14);
+  const bEl = document.getElementById('va-timeline-bars');
+  const lEl = document.getElementById('va-timeline-labels');
+  if (!bEl) return;
+  if (!last14.length) { bEl.innerHTML = '<div class="v3-placeholder">No daily data yet</div>'; return; }
+  const max = Math.max(...last14.map(r=>parseInt(r[1]||r.TotalSessions||0,10)),1);
+  const peak = last14.reduce((a,b)=>parseInt(b[1]||0,10)>parseInt(a[1]||0,10)?b:a,last14[0]);
+  va2set('va2-timeline-peak','Peak: '+(peak[1]||'—')+' on '+String(peak[0]||'').substring(5));
+  bEl.innerHTML = last14.map(r=>{
+    const count=parseInt(r[1]||r.TotalSessions||0,10);
+    const h=Math.max(Math.round((count/max)*80),2);
+    const date=String(r[0]||'').substring(5);
+    return `<div class="va2-tbar-wrap"><div class="va2-tbar-count">${count}</div><div class="va2-tbar" style="height:${h}px;" title="${date}: ${count}"></div></div>`;
+  }).join('');
+  if (lEl) lEl.innerHTML=last14.map(r=>`<div style="flex:1;font-size:8px;color:var(--v3-muted,#6b7280);text-align:center;">${String(r[0]||'').substring(8)}</div>`).join('');
+}
+
+/* ── Sources ─────────────────────────────────────── */
+function va2RenderSources(S) {
+  const counts={};
+  S.forEach(r=>{ const s=r[10]||r.RefSource||'direct'; counts[s]=(counts[s]||0)+1; });
+  va2BarChart('va-sources',counts,S.length,{direct:'#60a5fa',organic_search:'#4ade80',social:'#f472b6',referral:'#c084fc',topmate:'#C9A84C'});
+}
+
+/* ── Devices ─────────────────────────────────────── */
+function va2RenderDevices(S) {
+  const counts={};
+  S.forEach(r=>{ const d=r[4]||r.Device||'unknown'; counts[d]=(counts[d]||0)+1; });
+  va2BarChart('va-devices',counts,S.length,{desktop:'#60a5fa',mobile:'#f472b6',tablet:'#4ade80',unknown:'#555'});
+}
+
+/* ── Countries ───────────────────────────────────── */
+function va2RenderCountries(S) {
+  const counts={};
+  S.forEach(r=>{ const c=r[13]||r.Country||'Unknown'; counts[c]=(counts[c]||0)+1; });
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const el=document.getElementById('va-countries');
+  if (!el) return;
+  if (!sorted.length) { el.innerHTML='<div class="v3-placeholder">No country data</div>'; return; }
+  el.innerHTML=sorted.map(([country,count],i)=>`
+    <div class="va2-list-item">
+      <div class="va2-list-rank">#${i+1}</div>
+      <div class="va2-list-name">${country}</div>
+      <span class="va2-list-tag va2-tag-gold">${count}</span>
+    </div>`).join('');
+}
+
+/* ── Conversion Funnel ───────────────────────────── */
+function va2RenderFunnel(S,C,SC,EX) {
+  const el=document.getElementById('va2-funnel');
+  if (!el) return;
+  if (!S.length) { el.innerHTML='<div class="v3-placeholder">—</div>'; return; }
+  const reached=EX.filter(r=>(r[7]||r.ReachedPricing)==='yes').length;
+  const stages=[
+    {name:'Total sessions',  count:S.length,                                                                   color:'#60a5fa'},
+    {name:'Scrolled 50%+',   count:SC.filter(r=>parseInt(String(r[4]||'0').replace('%',''),10)>=50).length,    color:'#818cf8'},
+    {name:'Reached pricing', count:reached,                                                                     color:'#C9A84C'},
+    {name:'Clicked CTA',     count:C.length,                                                                    color:'#4ade80'},
+  ];
+  el.innerHTML=stages.map(s=>{
+    const pct=Math.round(s.count/Math.max(S.length,1)*100);
+    return `<div class="va2-funnel-row">
+      <div class="va2-funnel-name">${s.name}</div>
+      <div class="va2-funnel-track">
+        <div class="va2-funnel-bar" style="background:${s.color}1a;border-left:3px solid ${s.color};width:0;" data-target="${pct}">
+          <span class="va2-funnel-count" style="color:${s.color};">${s.count}</span>
+        </div>
+      </div>
+      <div class="va2-funnel-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>{ el.querySelectorAll('.va2-funnel-bar').forEach(b=>{ b.style.width=b.dataset.target+'%'; }); },80);
+}
+
+/* ── Scroll Funnel ───────────────────────────────── */
+function va2RenderScrollFunnel(SC) {
+  // Fix: use cumulative range buckets (reached AT LEAST X%) instead of exact value matching.
+  // This ensures any scroll depth value (26%, 73%, etc.) is correctly counted.
+  const thresholds = [25, 50, 75, 90, 100];
+  const totals = {};
+  thresholds.forEach(t => { totals[t] = 0; });
+  SC.forEach(r => {
+    const d = parseInt(String(r[4]||r.Depth||'0').replace('%',''), 10);
+    if (isNaN(d)) return;
+    thresholds.forEach(t => { if (d >= t) totals[t]++; });
+  });
+  const max = Math.max(...Object.values(totals), 1);
+  const el = document.getElementById('va-scroll-funnel');
+  if (!el) return;
+  el.innerHTML = thresholds.map(t => va2BarRow(t+'%+', totals[t], max, '#60a5fa')).join('');
+  va2AnimateBars(el);
+}
+
+/* ── Section Time ────────────────────────────────── */
+function va2RenderSectionTime(SE) {
+  const totals={},counts={};
+  SE.forEach(r=>{ const sec=r[4]||r.Section||''; const s=parseFloat(r[5]||r.SecondsSpent||0); if(!sec||isNaN(s)) return; totals[sec]=(totals[sec]||0)+s; counts[sec]=(counts[sec]||0)+1; });
+  const avgs={};
+  Object.keys(totals).forEach(k=>{ avgs[k]=Math.round(totals[k]/counts[k]); });
+  const max=Math.max(...Object.values(avgs),1);
+  const el=document.getElementById('va-section-time');
+  if (!el) return;
+  if (!Object.keys(avgs).length) { el.innerHTML='<div class="v3-placeholder">No section data yet</div>'; return; }
+  // Fix: pass raw number (avg) to va2BarRow for correct bar width calculation,
+  // and use the label param only for display — append 's' in the label, not the value.
+  el.innerHTML=Object.entries(avgs).sort((a,b)=>b[1]-a[1]).map(([sec,avg])=>va2BarRow(sec+' ('+avg+'s)', avg, max, '#C9A84C')).join('');
+  va2AnimateBars(el);
+}
+
+/* ── CTA Breakdown ───────────────────────────────── */
+function va2RenderCTABreakdown(C) {
+  const counts={};
+  C.forEach(r=>{ const l=(r[4]||r.Label||'').substring(0,36); counts[l]=(counts[l]||0)+1; });
+  const el=document.getElementById('va-cta-breakdown');
+  if (!el) return;
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  if (!sorted.length) { el.innerHTML='<div class="v3-placeholder">No CTA clicks yet</div>'; return; }
+  el.innerHTML=sorted.map(([lbl,cnt],i)=>`
+    <div class="va2-list-item">
+      <div class="va2-list-rank">#${i+1}</div>
+      <div class="va2-list-name">${lbl}</div>
+      <span class="va2-list-tag va2-tag-green">${cnt}</span>
+    </div>`).join('');
+}
+
+/* ── Exit Analysis ───────────────────────────────── */
+function va2RenderExitAnalysis(EX) {
+  const buckets={'0–24%':0,'25–49%':0,'50–74%':0,'75%+':0};
+  EX.forEach(r=>{ const d=parseInt(String(r[4]||r.ScrollDepth||'0').replace('%',''),10); if(d<25)buckets['0–24%']++; else if(d<50)buckets['25–49%']++; else if(d<75)buckets['50–74%']++; else buckets['75%+']++; });
+  const max=Math.max(...Object.values(buckets),1);
+  const el=document.getElementById('va-exit-analysis');
+  if (!el) return;
+  if (!EX.length) { el.innerHTML='<div class="v3-placeholder">No exit data yet</div>'; return; }
+  const reached=EX.filter(r=>(r[7]||r.ReachedPricing)==='yes').length;
+  el.innerHTML=Object.entries(buckets).map(([b,c])=>va2BarRow(b,c,max,'#f59e0b')).join('')+
+    `<div style="margin-top:10px;font-size:11px;color:var(--v3-muted,#6b7280);">
+       <span style="color:#4ade80;font-weight:800;">${reached}</span> of ${EX.length} reached pricing before exiting
+     </div>`;
+  va2AnimateBars(el);
+}
+
+/* ── Rage Clicks ─────────────────────────────────── */
+function va2RenderRageClicks(RA) {
+  const el=document.getElementById('va-rage-clicks');
+  if (!el) return;
+  if (!RA.length) { el.innerHTML='<div style="color:#4ade80;font-size:12px;padding:12px 0;font-weight:700;">✓ No rage clicks detected</div>'; return; }
+  el.innerHTML=RA.slice(-8).reverse().map(r=>`
+    <div class="va2-list-item">
+      <span class="va2-list-tag va2-tag-amber">!</span>
+      <div class="va2-list-name">Position ${r[4]||r.X||'?'}, ${r[5]||r.Y||'?'} — ${r[7]||r.Device||''}</div>
+      <span class="va2-list-tag va2-tag-muted">${r[6]||r.ClickCount||'?'}×</span>
+    </div>`).join('');
+}
+
+/* ── Browsers ────────────────────────────────────── */
+function va2RenderBrowsers(S) {
+  const counts={};
+  S.forEach(r=>{ const b=r[6]||r.Browser||'Other'; counts[b]=(counts[b]||0)+1; });
+  va2BarChart('va2-browsers',counts,S.length,{Chrome:'#60a5fa',Firefox:'#f59e0b',Safari:'#4ade80',Edge:'#a78bfa',Other:'#555'});
+}
+
+/* ── Sessions Table ──────────────────────────────── */
+function va2RenderSessionsTable(S) {
+  const tbody=document.getElementById('va-sessions-tbody');
+  if (!tbody) return;
+  va2set('va2-session-count', S.length+' sessions in period');
+  const recent=[...S].reverse().slice(0,30);
+  if (!recent.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--v3-muted,#6b7280);">No sessions in this period</td></tr>'; return; }
+  tbody.innerHTML=recent.map(r=>{
+    const ts=new Date(r[0]||r.Timestamp).toLocaleString('en-IN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const page=r[3]||r.Page||'—';
+    const country=r[13]||r.Country||'—';
+    const device=r[4]||r.Device||'—';
+    const source=r[10]||r.RefSource||'direct';
+    const secs=parseInt(r[15]||r.TotalSeconds||0,10);
+    const scroll=r[17]||r.MaxScrollDepth||'—';
+    const isNew=(r[11]||r.IsNew)==='yes';
+    const srcCls={direct:'va2-tag-blue',organic_search:'va2-tag-green',social:'va2-tag-pink',referral:'va2-tag-muted',topmate:'va2-tag-gold'}[source]||'va2-tag-muted';
+    return `<tr>
+      <td style="padding:9px 12px;color:var(--v3-muted,#6b7280);white-space:nowrap;">${ts}</td>
+      <td style="padding:9px 12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${page}</td>
+      <td style="padding:9px 12px;">${country}</td>
+      <td style="padding:9px 12px;text-transform:capitalize;">${device}</td>
+      <td style="padding:9px 12px;"><span class="va2-list-tag ${srcCls}">${source}</span></td>
+      <td style="padding:9px 12px;color:${secs>0?'var(--v3-gold,#C9A84C)':'var(--v3-muted,#6b7280)'};">${secs>0?va2fmt(secs):'—'}</td>
+      <td style="padding:9px 12px;color:#60a5fa;">${scroll}</td>
+      <td style="padding:9px 12px;">${isNew?'<span class="va2-new">NEW</span>':'<span class="va2-ret">RET</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── AI Insights (enhanced v3) ───────────────────── */
+function va2RenderInsights(S,C,SC,EX,RA) {
+  const el=document.getElementById('va2-insights');
+  if (!el || !S.length) { if(el) el.innerHTML=''; return; }
+  const insights=[];
+  const times=S.map(r=>parseInt(r[15]||0,10)).filter(n=>n>0);
+  const avgT=times.length?Math.round(times.reduce((a,b)=>a+b)/times.length):0;
+  const scVals=SC.map(r=>parseInt(String(r[4]||'0').replace('%',''),10)).filter(n=>!isNaN(n));
+  const avgSc=scVals.length?Math.round(scVals.reduce((a,b)=>a+b)/scVals.length):0;
+  const ctr=S.length?(C.length/S.length*100):0;
+  const igS=S.filter(r=>isInstagram(r[10]||r.RefSource||''));
+  const igPct=S.length?Math.round(igS.length/S.length*100):0;
+  const igTimes=igS.map(r=>parseInt(r[15]||0,10)).filter(n=>n>0);
+  const igAvgT=igTimes.length?Math.round(igTimes.reduce((a,b)=>a+b)/igTimes.length):0;
+  const directS=S.filter(r=>/direct/i.test(r[10]||r.RefSource||''));
+
+  if (RA.length>3) insights.push({i:'⚡',t:'Friction detected — '+RA.length+' rage click events',d:'Visitors are repeatedly clicking something unresponsive. Check those screen coordinates and fix any broken links or non-clickable elements.'});
+  if (ctr<2 && S.length>10) insights.push({i:'🎯',t:'Low CTA click rate ('+ctr.toFixed(1)+'%)',d:'Only '+ctr.toFixed(1)+'% of visitors click your CTAs. Test button placement, color, or copy. Try moving a CTA above the fold.'});
+  if (avgSc<40 && scVals.length>5) insights.push({i:'📉',t:'Visitors leaving before seeing your offer ('+avgSc+'% avg scroll)',d:'Most visitors don\'t reach your pricing. Strengthen your opening hook. Consider adding a teaser or anchor link near the top pointing to pricing.'});
+  if (avgT>180) insights.push({i:'🔥',t:'High engagement — '+va2fmt(avgT)+' average session',d:'Visitors are deeply engaged. This is a strong quality signal — your content is working. Consider adding a follow-up sequence or exit offer.'});
+  if (igPct>0 && igPct<10 && S.length>20) insights.push({i:'📸',t:'Instagram traffic is low ('+igPct+'% of sessions)',d:'Most traffic isn\'t from Instagram. Make sure your bio link includes ?utm_source=instagram&utm_medium=bio. Post more consistently to drive bio link clicks.'});
+  if (igPct>=10 && igAvgT>0 && igAvgT<avgT*0.7) insights.push({i:'📸',t:'Instagram visitors leaving faster than average',d:'IG visitors spend '+va2fmt(igAvgT)+' vs '+va2fmt(avgT)+' average. Your landing experience may not match what they expected from your post. Bridge the gap in your opening copy.'});
+  if (igPct>=10 && igAvgT>=avgT*0.8) insights.push({i:'✨',t:'Instagram traffic is high quality',d:igPct+'% of sessions from Instagram — and they\'re staying '+va2fmt(igAvgT)+'. Your content-to-page match is working. Scale posting frequency.'});
+  if (directS.length>S.length*0.5 && S.length>20) insights.push({i:'🔗',t:'Most visitors arrive directly ('+Math.round(directS.length/S.length*100)+'%)',d:'High direct traffic means strong brand recall or saved links. Keep nurturing your audience and remind them of your URL in stories and captions.'});
+
+  if (!insights.length) { el.innerHTML=''; return; }
+  el.innerHTML='<div class="v3-section-label">AI insights</div>'+insights.map(i=>`
+    <div class="va2-insight">
+      <div class="va2-insight-icon">${i.i}</div>
+      <div><div class="va2-insight-title">${i.t}</div><div class="va2-insight-text">${i.d}</div></div>
+    </div>`).join('')+'<div style="height:6px;"></div>';
+}
+
+/* ── Shared helpers ──────────────────────────────── */
+function va2BarChart(elId,counts,total,colors) {
+  const el=document.getElementById(elId);
+  if (!el) return;
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const max=Math.max(...sorted.map(e=>e[1]),1);
+  el.innerHTML=sorted.map(([lbl,cnt])=>{
+    const color=colors[lbl]||'#888';
+    const pct=total>0?Math.round(cnt/total*100):0;
+    return va2BarRow(lbl+' ('+pct+'%)',cnt,max,color);
+  }).join('');
+  va2AnimateBars(el);
+}
+
+function va2BarRow(lbl,val,max,color) {
+  const pct=Math.round((parseInt(val,10)||0)/Math.max(max,1)*100);
+  return `<div class="va2-bar-row">
+    <div class="va2-bar-label" title="${lbl}">${lbl}</div>
+    <div class="va2-bar-track"><div class="va2-bar-fill" style="background:${color};" data-target="${pct}"></div></div>
+    <div class="va2-bar-val">${val}</div>
+  </div>`;
+}
+
+function va2AnimateBars(el) {
+  setTimeout(()=>{ el.querySelectorAll('.va2-bar-fill').forEach(b=>{ b.style.width=b.dataset.target+'%'; }); },60);
+}
+
+function va2set(id,val) { const el=document.getElementById(id); if(el) el.textContent=val; }
+
+function va2fmt(secs) {
+  if(!secs||secs<=0) return '—';
+  if(secs<60) return secs+'s';
+  const m=Math.floor(secs/60),s=secs%60;
+  return m+'m'+(s>0?' '+s+'s':'');
+}
+</script>
+
 </body>
 </html>
