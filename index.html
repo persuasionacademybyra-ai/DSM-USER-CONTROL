@@ -2717,6 +2717,7 @@ function renderFlaggedSection() {
   const sec = document.getElementById('flagged-section');
   const cards = document.getElementById('flag-cards');
 
+  if (!sec || !cards) return;   // ← ADD THIS LINE
   if (flagged.length === 0) { sec.style.display = 'none'; return; }
   sec.style.display = 'block';
 
