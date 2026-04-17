@@ -2501,13 +2501,21 @@ function toggleSidebar() {
 const SECTION_NAMES = { keys: 'License Keys', analytics: 'Analytics', activity: 'Activity Log', flagged: 'Flagged Users' };
 function setSection(name, el) {
   document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-  const target = el || (typeof event !== 'undefined' && event && event.currentTarget) || null;
-  if (target) target.classList.add('active');
-  const nameEl = document.getElementById('topbar-section-name');
-  if (nameEl) nameEl.textContent = SECTION_NAMES[name] || name;
 
-  // Hide all section panels
-  const sections = ['section-keys','section-analytics','section-visitors','section-activity','section-flagged'];
+  const target = el || (typeof event !== 'undefined' && event.currentTarget);
+  if (target) target.classList.add('active');
+
+  const nameEl = document.getElementById('topbar-section-name');
+  if (nameEl) nameEl.textContent = name;
+
+  const sections = [
+    'section-keys',
+    'section-analytics',
+    'section-visitors',
+    'section-activity',
+    'section-flagged'
+  ];
+
   sections.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -2515,19 +2523,23 @@ function setSection(name, el) {
 
   if (name === 'keys') {
     document.getElementById('section-keys').style.display = '';
-  } else if (name === 'analytics') {
+  } 
+  else if (name === 'analytics') {
     document.getElementById('section-analytics').style.display = '';
-    renderAnalytics();
-  } else if (name === 'activity') {
+    if (typeof renderAnalytics === 'function') renderAnalytics();
+  } 
+  else if (name === 'visitors') {
+    document.getElementById('section-visitors').style.display = '';
+    if (typeof renderVisitorAnalytics === 'function') renderVisitorAnalytics();
+  } 
+  else if (name === 'activity') {
     document.getElementById('section-activity').style.display = '';
-    renderActivity();
-  } else if (name === 'flagged') {
+    if (typeof renderActivity === 'function') renderActivity();
+  } 
+  else if (name === 'flagged') {
     document.getElementById('section-flagged').style.display = '';
-    renderFlaggedSection2();
+    if (typeof renderFlaggedSection === 'function') renderFlaggedSection();
   }
-   else if (name === 'visitors') {
-  document.getElementById('section-visitors').style.display = '';
-  renderVisitorAnalytics();
 }
 }
 
