@@ -1,0 +1,3165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSM Admin — Persuasion Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap">
+<style>
+
+/* ══════════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════════ */
+:root {
+  --bg:        #060910;
+  --bg2:       #0b0f1a;
+  --bg3:       #101522;
+  --border:    #1c2438;
+  --border2:   #242d42;
+  --gold:      #c8a94b;
+  --gold2:     #e8d08a;
+  --gold3:     #8a6e28;
+  --gold-glow: rgba(200,169,75,0.15);
+  --white:     #f5f0e8;
+  --muted:     #8090b0;
+  --dimmed:    #4a5a78;
+  --green:     #2dba72;
+  --green-bg:  rgba(45,186,114,0.08);
+  --green-bd:  rgba(45,186,114,0.25);
+  --red:       #d94040;
+  --red-bg:    rgba(217,64,64,0.08);
+  --red-bd:    rgba(217,64,64,0.25);
+  --amber:     #e07a20;
+  --amber-bg:  rgba(224,122,32,0.08);
+  --amber-bd:  rgba(224,122,32,0.25);
+  --blue:      #4a80d4;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ══════════════════════════════════════════════
+   NOISE OVERLAY
+══════════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ══════════════════════════════════════════════
+   LOGIN PAGE
+══════════════════════════════════════════════ */
+#login-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.login-aurora {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.login-aurora::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  left: 50%; top: -100px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(200,169,75,0.07) 0%, transparent 65%);
+  border-radius: 50%;
+  animation: auroraFloat 8s ease-in-out infinite;
+}
+.login-aurora::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  right: -100px; bottom: 100px;
+  background: radial-gradient(circle, rgba(74,128,212,0.05) 0%, transparent 65%);
+  border-radius: 50%;
+  animation: auroraFloat 11s ease-in-out infinite reverse;
+}
+@keyframes auroraFloat {
+  0%,100% { transform: translateX(-50%) translateY(0) scale(1); }
+  50%      { transform: translateX(-50%) translateY(-30px) scale(1.1); }
+}
+
+.login-box {
+  width: 100%;
+  max-width: 460px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 2;
+  margin: 0 auto;
+  animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(32px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.login-crest {
+  text-align: center;
+  margin-bottom: 44px;
+}
+
+.login-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+.login-eyebrow::before,
+.login-eyebrow::after {
+  content: '';
+  width: 32px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.login-eyebrow::after { background: linear-gradient(to left, transparent, var(--gold)); }
+
+.login-wordmark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+.login-wordmark em {
+  font-style: italic;
+  color: var(--gold);
+}
+.login-sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--dimmed);
+  letter-spacing: 0.06em;
+  margin-top: 8px;
+}
+
+/* card */
+.login-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  padding: 40px 40px 36px;
+}
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.login-field { margin-bottom: 22px; }
+.login-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 9px;
+}
+.login-input-wrap { position: relative; }
+.login-input-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--dimmed);
+  font-size: 15px;
+  pointer-events: none;
+}
+.login-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  padding: 13px 16px 13px 40px;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  border-radius: 2px;
+}
+.login-input:focus {
+  border-color: var(--gold3);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+.login-input::placeholder { color: var(--dimmed); opacity: 0.6; }
+
+.login-btn {
+  width: 100%;
+  position: relative;
+  background: var(--gold);
+  color: #0a0c10;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+  margin-top: 8px;
+  transition: all 0.2s;
+  overflow: hidden;
+}
+.login-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+.login-btn:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 8px 32px rgba(200,169,75,0.25); }
+.login-btn:active { transform: translateY(0); }
+
+.login-error {
+  display: none;
+  margin-top: 14px;
+  padding: 11px 16px;
+  background: var(--red-bg);
+  border: 1px solid var(--red-bd);
+  border-radius: 2px;
+  font-size: 13px;
+  color: #f08080;
+  letter-spacing: 0.02em;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dimmed);
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════ */
+#dashboard-page { display: none; animation: fadeIn 0.4s ease both; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+/* TOPBAR */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: rgba(6,9,16,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold3), transparent);
+  opacity: 0.5;
+}
+
+.topbar-brand { display: flex; align-items: center; gap: 18px; }
+
+.topbar-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.topbar-logo em { font-style: italic; color: var(--gold2); }
+
+.topbar-sep {
+  width: 1px; height: 22px;
+  background: var(--border2);
+}
+.topbar-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dimmed);
+}
+
+.topbar-right { display: flex; align-items: center; gap: 24px; }
+
+/* sync status indicator */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.sync-status.live { color: var(--green); }
+.sync-status.mock { color: var(--amber); }
+.sync-status.error { color: var(--red); }
+
+.sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.sync-status.live .sync-dot { animation: livePulse 2s infinite; }
+@keyframes livePulse {
+  0%,100% { opacity:1; box-shadow: 0 0 0 0 currentColor; }
+  50%      { opacity:0.6; box-shadow: 0 0 0 4px transparent; }
+}
+
+.topbar-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--dimmed);
+  letter-spacing: 0.04em;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 7px 18px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.logout-btn:hover { border-color: var(--gold3); color: var(--gold); }
+
+/* DASH BODY */
+.dash-body {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 36px 40px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+/* GOOGLE SHEETS BANNER */
+.sheets-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-bd);
+  border-radius: 2px;
+  padding: 12px 20px;
+  margin-bottom: 28px;
+  font-size: 13px;
+  color: #e0aa60;
+  line-height: 1.5;
+}
+.sheets-banner.connected {
+  background: var(--green-bg);
+  border-color: var(--green-bd);
+  color: #60c090;
+}
+.sheets-banner-icon { font-size: 18px; flex-shrink: 0; }
+.sheets-banner strong { color: inherit; }
+.sheets-config-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid currentColor;
+  color: inherit;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  cursor: pointer;
+  border-radius: 2px;
+  white-space: nowrap;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.sheets-config-btn:hover { background: rgba(255,255,255,0.08); }
+
+/* STATS ROW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 24px 26px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  border-radius: 2px;
+  transition: border-color 0.25s, transform 0.25s;
+}
+.stat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--gold3);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.stat-card:hover::after { opacity: 1; }
+
+/* color variants */
+.stat-card.c-gold::after { background: var(--gold); }
+.stat-card.c-green::after { background: var(--green); }
+.stat-card.c-red::after { background: var(--red); }
+.stat-card.c-amber::after { background: var(--amber); }
+
+.stat-card.c-gold:hover { border-color: var(--gold3); }
+.stat-card.c-green:hover { border-color: var(--green-bd); }
+.stat-card.c-red:hover { border-color: var(--red-bd); }
+.stat-card.c-amber:hover { border-color: var(--amber-bd); }
+
+.stat-glyph {
+  position: absolute;
+  right: 20px; top: 20px;
+  font-size: 28px;
+  opacity: 0.07;
+  pointer-events: none;
+  transform: rotate(-10deg);
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dimmed);
+  margin-bottom: 14px;
+}
+
+.stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 54px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--white);
+  transition: color 0.3s;
+}
+.c-gold .stat-num   { color: var(--gold); }
+.c-green .stat-num  { color: var(--green); }
+.c-red .stat-num    { color: var(--red); }
+.c-amber .stat-num  { color: var(--amber); }
+
+.stat-bar-wrap {
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.stat-bar {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 1s cubic-bezier(0.16,1,0.3,1);
+  width: 0%;
+}
+.c-gold .stat-bar  { background: var(--gold); }
+.c-green .stat-bar { background: var(--green); }
+.c-red .stat-bar   { background: var(--red); }
+.c-amber .stat-bar { background: var(--amber); }
+
+.stat-sub {
+  font-size: 12px;
+  color: var(--dimmed);
+  font-weight: 400;
+}
+
+/* CONTROLS ROW */
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  flex: 1;
+  min-width: 260px;
+  position: relative;
+}
+.search-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--dimmed);
+  font-size: 14px;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 11px 16px 11px 40px;
+  outline: none;
+  border-radius: 2px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-input:focus { border-color: var(--gold3); box-shadow: 0 0 0 3px var(--gold-glow); }
+.search-input::placeholder { color: var(--dimmed); opacity: 0.5; }
+
+.filter-select {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 11px 36px 11px 14px;
+  outline: none;
+  cursor: pointer;
+  border-radius: 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a5a78' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 0.2s;
+}
+.filter-select:focus { border-color: var(--gold3); outline: none; }
+
+.sync-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 11px 18px;
+  cursor: pointer;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.sync-btn:hover { border-color: var(--gold3); color: var(--gold); }
+.sync-btn.spinning .sync-icon { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.issue-btn {
+  background: var(--gold);
+  color: #0a0c10;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 11px 24px;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.issue-btn::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+}
+.issue-btn:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(200,169,75,0.2); }
+
+/* TABLE */
+.table-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.table-title-group { display: flex; align-items: center; gap: 12px; }
+.table-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.table-count {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dimmed);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.table-scroll { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dimmed);
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+thead th:hover { color: var(--gold); }
+thead th.sorted { color: var(--gold); }
+.sort-arrow { margin-left: 4px; opacity: 0.6; }
+
+tbody tr {
+  border-bottom: 1px solid rgba(28,36,56,0.6);
+  transition: background 0.12s;
+}
+tbody tr:hover { background: rgba(255,255,255,0.015); }
+tbody tr:last-child { border-bottom: none; }
+tbody tr.row-anim { animation: rowIn 0.3s ease both; }
+@keyframes rowIn { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
+
+td {
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+.cell-key {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--gold2);
+  letter-spacing: 0.04em;
+}
+
+.cell-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+}
+.cell-email {
+  font-size: 12px;
+  color: var(--dimmed);
+}
+.cell-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* BADGES */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.badge-active {
+  color: var(--green);
+  border-color: var(--green-bd);
+  background: var(--green-bg);
+}
+.badge-revoked {
+  color: var(--red);
+  border-color: var(--red-bd);
+  background: var(--red-bg);
+}
+.badge-flagged {
+  color: var(--amber);
+  border-color: var(--amber-bd);
+  background: var(--amber-bg);
+  animation: flagPulse 2.5s infinite;
+}
+@keyframes flagPulse {
+  0%,100% { background: var(--amber-bg); }
+  50%      { background: rgba(224,122,32,0.15); }
+}
+
+/* IP */
+.ip-mono {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--dimmed);
+}
+.ip-warn { color: var(--amber); font-weight: 500; }
+.ip-count {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--amber-bg);
+  color: var(--amber);
+  border: 1px solid var(--amber-bd);
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 5px;
+  letter-spacing: 0.06em;
+}
+
+/* LOGIN COUNT */
+.login-high { color: var(--amber); font-weight: 700; font-family: 'DM Mono', monospace; font-size: 14px; }
+.login-normal { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 13px; }
+
+/* ACTION BUTTONS */
+.actions-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+.act-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border: 1px solid;
+  cursor: pointer;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.act-btn:active { transform: scale(0.97); }
+
+.act-revoke  { color: var(--red);   border-color: var(--red-bd); }
+.act-revoke:hover { background: var(--red-bg); }
+.act-grant   { color: var(--green); border-color: var(--green-bd); }
+.act-grant:hover { background: var(--green-bg); }
+.act-resend  { color: var(--gold);  border-color: rgba(200,169,75,0.3); }
+.act-resend:hover { background: var(--gold-glow); }
+.act-disabled { color: var(--dimmed); border-color: var(--border); cursor: not-allowed; opacity: 0.4; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--dimmed);
+}
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 14px; }
+
+/* FLAGGED SECTION */
+.flagged-section {
+  margin-top: 28px;
+}
+.section-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 16px;
+}
+.section-eyebrow::before {
+  content: '';
+  width: 28px; height: 1px;
+  background: var(--amber);
+}
+
+.flag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.flag-card {
+  background: var(--bg2);
+  border: 1px solid var(--amber-bd);
+  border-left: 2px solid var(--amber);
+  padding: 20px 22px;
+  border-radius: 2px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.flag-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(224,122,32,0.08); }
+.flag-card-header { margin-bottom: 12px; }
+.flag-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 3px;
+}
+.flag-card-key {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+.flag-detail {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 5px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.flag-detail-icon { flex-shrink: 0; opacity: 0.6; }
+.flag-detail strong { color: var(--amber); }
+.flag-reason {
+  margin-top: 10px;
+  padding: 9px 12px;
+  background: var(--amber-bg);
+  border-left: 2px solid var(--amber);
+  font-size: 12px;
+  color: #e0aa60;
+  border-radius: 0 2px 2px 0;
+}
+.flag-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,6,12,0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal-overlay.open .modal { animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+@keyframes modalIn { from { opacity:0; transform:scale(0.94) translateY(12px); } to { opacity:1; transform:none; } }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  width: 100%;
+  max-width: 500px;
+  padding: 36px;
+  position: relative;
+  border-radius: 4px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+}
+.modal::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.modal-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  background: none;
+  border: none;
+  color: var(--dimmed);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.modal-close:hover { color: var(--white); background: var(--bg3); }
+
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.modal-sub {
+  font-size: 13px;
+  color: var(--dimmed);
+  margin-bottom: 28px;
+}
+
+.modal-field { margin-bottom: 18px; }
+.modal-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.modal-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 12px 14px;
+  outline: none;
+  border-radius: 2px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.modal-input:focus { border-color: var(--gold3); box-shadow: 0 0 0 3px var(--gold-glow); }
+.modal-input::placeholder { color: var(--dimmed); opacity: 0.5; }
+
+.modal-hint {
+  font-size: 11px;
+  color: var(--dimmed);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+.modal-submit {
+  flex: 1;
+  background: var(--gold);
+  color: #0a0c10;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.modal-submit:hover { background: var(--gold2); }
+
+.modal-cancel {
+  flex: 1;
+  background: transparent;
+  color: var(--dimmed);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.modal-cancel:hover { border-color: var(--border2); color: var(--muted); }
+
+/* SHEETS CONFIG MODAL */
+.sheets-setup-info {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.sheets-setup-info code {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  background: var(--border);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--gold2);
+}
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-left: 2px solid var(--green);
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--green);
+  z-index: 2000;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.35s;
+  max-width: 340px;
+  border-radius: 2px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { border-left-color: var(--red); color: #f08080; }
+.toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: currentColor;
+  opacity: 0.5;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dimmed); }
+
+/* ══════════════════════════════════════════════
+   UPGRADE 1: GLASSMORPHISM STAT CARDS
+══════════════════════════════════════════════ */
+.stat-card {
+  background: rgba(11, 15, 26, 0.55) !important;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.stat-card:hover {
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.09);
+}
+
+/* ══════════════════════════════════════════════
+   UPGRADE 2: GOLD SHIMMER ON STAT NUMBERS
+══════════════════════════════════════════════ */
+@keyframes goldShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.c-gold .stat-num {
+  background: linear-gradient(90deg, var(--gold) 20%, var(--gold2) 40%, #fff8e7 50%, var(--gold2) 60%, var(--gold) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShimmer 3.5s linear infinite;
+}
+.c-green .stat-num {
+  background: linear-gradient(90deg, var(--green) 20%, #7eedb8 50%, var(--green) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShimmer 4s linear infinite;
+}
+.c-red .stat-num {
+  background: linear-gradient(90deg, var(--red) 20%, #ff9090 50%, var(--red) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShimmer 4.5s linear infinite;
+}
+.c-amber .stat-num {
+  background: linear-gradient(90deg, var(--amber) 20%, #f5ba6a 50%, var(--amber) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShimmer 5s linear infinite;
+}
+
+/* ══════════════════════════════════════════════
+   UPGRADE 3: SIDEBAR NAVIGATION
+══════════════════════════════════════════════ */
+body {
+  display: flex;
+  flex-direction: row;
+}
+
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: rgba(6,9,16,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: width 0.3s cubic-bezier(0.16,1,0.3,1), min-width 0.3s cubic-bezier(0.16,1,0.3,1);
+  flex-shrink: 0;
+}
+.sidebar.collapsed {
+  width: 60px;
+  min-width: 60px;
+}
+.sidebar.collapsed .sidebar-label,
+.sidebar.collapsed .sidebar-subtitle,
+.sidebar.collapsed .sidebar-brand-text,
+.sidebar.collapsed .sidebar-section-title {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sidebar.collapsed .sidebar-item span {
+  display: none;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 18px 20px;
+  border-bottom: 1px solid var(--border);
+  min-height: 62px;
+}
+.sidebar-logo-mark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+.sidebar-brand-text {
+  transition: opacity 0.2s, width 0.3s;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sidebar-wordmark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.sidebar-wordmark em { font-style: italic; color: var(--gold2); }
+.sidebar-subtitle {
+  font-size: 10px;
+  color: var(--dimmed);
+  letter-spacing: 0.08em;
+  margin-top: 3px;
+  transition: opacity 0.2s;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px; height: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--dimmed);
+  transition: all 0.2s;
+  z-index: 10;
+}
+.sidebar-toggle:hover { border-color: var(--gold3); color: var(--gold); background: var(--bg3); }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-section-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dimmed);
+  padding: 8px 8px 6px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  transition: all 0.15s;
+  white-space: nowrap;
+  position: relative;
+  border: 1px solid transparent;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+.sidebar-item.active {
+  background: rgba(200,169,75,0.08);
+  color: var(--gold);
+  border-color: rgba(200,169,75,0.2);
+}
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 2px;
+  background: var(--gold);
+  border-radius: 0 2px 2px 0;
+}
+.sidebar-item-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.sidebar-badge {
+  margin-left: auto;
+  background: var(--amber-bg);
+  color: var(--amber);
+  border: 1px solid var(--amber-bd);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.sidebar-bottom {
+  padding: 12px 10px 16px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--dimmed);
+  text-align: center;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s;
+}
+.sidebar.collapsed .sidebar-time { opacity: 0; }
+
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar-logout:hover { border-color: var(--gold3); color: var(--gold); }
+
+/* Main content area wraps everything except sidebar */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* Topbar adjustments — slimmer now that nav is in sidebar */
+.topbar {
+  padding: 0 32px !important;
+}
+.topbar-brand { display: none !important; }
+.topbar-right { margin-left: auto; }
+
+/* ══════════════════════════════════════════════
+   UPGRADE 4: AVATAR INITIALS IN TABLE ROWS
+══════════════════════════════════════════════ */
+.cell-avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.avatar-name-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════════════════════
+   UPGRADE 5: STAGGERED ROW ENTRANCE
+══════════════════════════════════════════════ */
+@keyframes rowStagger {
+  from {
+    opacity: 0;
+    transform: translateX(-12px) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+tbody tr.row-anim {
+  animation: rowStagger 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ══════════════════════════════════════════════
+   UPGRADE 6: EXPANDABLE ROW DETAIL
+══════════════════════════════════════════════ */
+tbody tr.data-row {
+  cursor: pointer;
+}
+tbody tr.data-row:hover {
+  background: rgba(200,169,75,0.03) !important;
+}
+tr.expand-row td {
+  padding: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+.expand-inner {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.expand-inner.open {
+  max-height: 300px;
+}
+.expand-content {
+  padding: 16px 24px 20px 60px;
+  background: rgba(10,14,24,0.6);
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px 24px;
+}
+.expand-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.expand-field-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dimmed);
+}
+.expand-field-value {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+.expand-field-value.highlight { color: var(--gold2); }
+.expand-ip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+.expand-ip-chip {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 3px;
+  color: var(--muted);
+}
+.expand-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .sidebar { width: 60px; min-width: 60px; }
+  .sidebar .sidebar-label,
+  .sidebar .sidebar-subtitle,
+  .sidebar .sidebar-brand-text,
+  .sidebar .sidebar-section-title { opacity: 0; width: 0; overflow: hidden; }
+  .sidebar .sidebar-item span { display: none; }
+  .sidebar .sidebar-time { opacity: 0; }
+}
+@media (max-width: 768px) {
+  .dash-body { padding: 24px 20px 48px; }
+  .topbar { padding: 0 20px !important; }
+  .topbar-time { display: none; }
+}
+@media (max-width: 560px) {
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-num { font-size: 42px; }
+  .controls-row { flex-direction: column; align-items: stretch; }
+  .sidebar { display: none; }
+}
+
+
+/* ══════════════════════════════════════════════
+   SECTION PAGES
+══════════════════════════════════════════════ */
+.section-page-header {
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.section-page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.section-page-sub {
+  font-size: 13px;
+  color: var(--dimmed);
+  letter-spacing: 0.04em;
+}
+
+/* ══════════════════════════════════════════════
+   ANALYTICS SECTION
+══════════════════════════════════════════════ */
+.analytics-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.analytics-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.analytics-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.analytics-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,169,75,0.3), transparent);
+}
+.analytics-card-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+/* bar charts */
+.bar-chart-wrap { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-row-label { font-size: 12px; color: var(--muted); width: 90px; flex-shrink: 0; }
+.bar-row-track {
+  flex: 1;
+  height: 8px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.bar-row-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+}
+.bar-row-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--dimmed); width: 28px; text-align: right; }
+
+/* analytics list */
+.analytics-list { display: flex; flex-direction: column; gap: 8px; }
+.analytics-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  transition: border-color 0.2s;
+}
+.analytics-list-item:hover { border-color: var(--border2); }
+.analytics-list-rank {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--dimmed);
+  width: 18px;
+  flex-shrink: 0;
+}
+.analytics-list-name { font-size: 13px; font-weight: 600; color: var(--white); flex: 1; }
+.analytics-list-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--gold);
+  background: var(--gold-glow);
+  border: 1px solid rgba(200,169,75,0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* health score */
+.health-score-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0; gap: 12px; }
+.health-score-ring {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 700;
+  position: relative;
+}
+.health-score-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dimmed); }
+.health-grade {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+
+/* timeline */
+.timeline-chart-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 80px;
+  padding-top: 8px;
+}
+.timeline-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.timeline-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.timeline-bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: var(--gold3);
+  transition: height 1s cubic-bezier(0.16,1,0.3,1), background 0.2s;
+  min-height: 2px;
+  cursor: pointer;
+}
+.timeline-bar:hover { background: var(--gold); }
+.timeline-label { font-size: 9px; color: var(--dimmed); letter-spacing: 0.04em; white-space: nowrap; }
+
+/* ══════════════════════════════════════════════
+   ACTIVITY LOG SECTION
+══════════════════════════════════════════════ */
+.activity-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.activity-feed-wrap {
+  padding: 8px 0;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.activity-empty { text-align: center; padding: 48px 24px; }
+.activity-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 22px;
+  border-bottom: 1px solid rgba(28,36,56,0.5);
+  transition: background 0.12s;
+  animation: rowIn 0.3s ease both;
+}
+.activity-entry:hover { background: rgba(255,255,255,0.015); }
+.activity-entry:last-child { border-bottom: none; }
+.activity-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.activity-icon.revoke { background: var(--red-bg); border: 1px solid var(--red-bd); }
+.activity-icon.grant  { background: var(--green-bg); border: 1px solid var(--green-bd); }
+.activity-icon.issue  { background: var(--gold-glow); border: 1px solid rgba(200,169,75,0.25); }
+.activity-icon.resend { background: rgba(74,128,212,0.08); border: 1px solid rgba(74,128,212,0.2); }
+.activity-icon.sync   { background: var(--bg3); border: 1px solid var(--border); }
+.activity-icon.login  { background: var(--green-bg); border: 1px solid var(--green-bd); }
+.activity-icon.logout { background: var(--red-bg); border: 1px solid var(--red-bd); }
+.activity-body { flex: 1; min-width: 0; }
+.activity-msg { font-size: 13px; color: var(--white); line-height: 1.45; }
+.activity-msg strong { color: var(--gold2); }
+.activity-time { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--dimmed); margin-top: 3px; }
+.activity-type-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .analytics-grid-2 { grid-template-columns: 1fr; }
+  .analytics-grid-3 { grid-template-columns: 1fr; }
+}
+
+
+/* ══════════════════════════════════════════════
+   PREMIUM UI UPGRADES
+══════════════════════════════════════════════ */
+
+/* Gold accent line on sidebar brand */
+.sidebar-brand::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 18px; right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold3), transparent);
+}
+
+/* Sidebar item hover glow */
+.sidebar-item:hover {
+  box-shadow: inset 0 0 20px rgba(200,169,75,0.03);
+}
+
+/* Premium topbar — frosted glass */
+.topbar {
+  background: rgba(6,9,16,0.92) !important;
+  box-shadow: 0 1px 0 rgba(200,169,75,0.08), 0 4px 24px rgba(0,0,0,0.3);
+}
+
+/* Section header breadcrumb */
+.dash-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--dimmed);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.dash-breadcrumb-sep { opacity: 0.4; }
+.dash-breadcrumb-current { color: var(--gold); }
+
+/* Stat card micro sparkle on hover */
+.stat-card {
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.3s !important;
+}
+.stat-card:hover {
+  box-shadow: 0 16px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,169,75,0.08), inset 0 1px 0 rgba(255,255,255,0.09) !important;
+}
+
+/* Table panel premium border */
+.table-panel {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+/* Login card premium shadow */
+.login-card {
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,169,75,0.06);
+  border-radius: 4px;
+}
+
+/* Gold pulsing ring on login card border top */
+.login-card::before {
+  animation: goldLinePulse 4s ease-in-out infinite;
+}
+@keyframes goldLinePulse {
+  0%,100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+/* Premium flag cards */
+.flag-card {
+  box-shadow: 0 4px 24px rgba(224,122,32,0.06);
+}
+
+/* Stats row micro-label */
+.stat-sub {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+
+/* Topbar section name indicator */
+.topbar-section-name {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dimmed);
+  margin-right: auto;
+}
+
+/* Sidebar gold orb logo */
+.sidebar-logo-mark {
+  background: radial-gradient(circle at 35% 35%, var(--gold2), var(--gold3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 22px !important;
+}
+
+/* Analytics card hover */
+.analytics-card {
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.analytics-card:hover {
+  border-color: var(--border2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* Section transition animation */
+#section-keys, #section-analytics, #section-activity, #section-flagged {
+  animation: sectionFadeIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes sectionFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="login-aurora"></div>
+
+<!-- ═══════════════ LOGIN PAGE ═══════════════ -->
+<div id="login-page">
+  <div class="login-box">
+
+    <div class="login-crest">
+      <div class="login-eyebrow">Admin Access</div>
+      <div class="login-wordmark">Persuasion<br><em>Academy</em></div>
+      <div class="login-sub">DSM License Key Management · 2026</div>
+    </div>
+
+    <div class="login-card">
+      <div class="login-field">
+        <label class="login-label" for="admin-user">Username</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">⊕</span>
+          <input class="login-input" type="text" id="admin-user" placeholder="Enter username" autocomplete="off" />
+        </div>
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="admin-pass">Password</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">◉</span>
+          <input class="login-input" type="password" id="admin-pass" placeholder="Enter password" autocomplete="off" />
+        </div>
+      </div>
+      <button class="login-btn" onclick="doLogin()">Enter Dashboard →</button>
+      <div class="login-error" id="login-error">⚠ Invalid credentials. Access denied.</div>
+    </div>
+
+    <div class="login-footer">Persuasion Academy by RA &nbsp;·&nbsp; DSM '26</div>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="dashboard-page" style="display:none;width:100%;min-height:100vh;flex-direction:row;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div style="position:relative;">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-mark">D</div>
+        <div class="sidebar-brand-text">
+          <div class="sidebar-wordmark">DSM <em>Admin</em></div>
+          <div class="sidebar-subtitle">Persuasion Academy</div>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Main</div>
+      <div class="sidebar-item active" onclick="setSection('keys')">
+        <span class="sidebar-item-icon">🔑</span>
+        <span>License Keys</span>
+      </div>
+      <div class="sidebar-item" onclick="setSection('analytics')">
+        <span class="sidebar-item-icon">📊</span>
+        <span>Analytics</span>
+      </div>
+      <div class="sidebar-item" onclick="setSection('activity')">
+        <span class="sidebar-item-icon">⚡</span>
+        <span>Activity Log</span>
+      </div>
+      <div class="sidebar-section-title" style="margin-top:12px;">Alerts</div>
+      <div class="sidebar-item" onclick="setSection('flagged')">
+        <span class="sidebar-item-icon">⚑</span>
+        <span>Flagged Users</span>
+        <span class="sidebar-badge" id="sidebar-flag-count">0</span>
+      </div>
+      <div class="sidebar-section-title" style="margin-top:12px;">System</div>
+      <div class="sidebar-item" onclick="openSheetsModal()">
+        <span class="sidebar-item-icon">⚙</span>
+        <span>Settings</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-time" id="sidebar-clock"></div>
+      <div class="sync-status mock" id="sync-indicator" style="justify-content:center;padding:4px 0 8px;font-size:10px;">
+        <div class="sync-dot"></div>
+        <span id="sync-label">Mock Data</span>
+      </div>
+      <button class="sidebar-logout" onclick="doLogout()">
+        <span style="font-size:14px;flex-shrink:0;">⎋</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">DSM <em>Admin</em></div>
+    </div>
+    <div class="topbar-section-name" id="topbar-section-name">License Keys</div>
+    <div class="topbar-right">
+      <div class="sync-status mock" id="topbar-sync" style="font-size:10px;gap:6px;">
+        <div class="sync-dot"></div>
+        <span id="topbar-sync-label">Mock</span>
+      </div>
+      <div class="topbar-time" id="topbar-clock"></div>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <div class="dash-body">
+
+    <!-- GOOGLE SHEETS BANNER -->
+    <div class="sheets-banner" id="sheets-banner">
+      <span class="sheets-banner-icon">⚠</span>
+      <span>
+        <strong>Not connected to Google Sheets.</strong>
+        This dashboard is currently using local mock data. Connect your Google Sheet to enable real-time sync.
+      </span>
+      <button class="sheets-config-btn" onclick="openSheetsModal()">Configure →</button>
+    </div>
+
+    <!-- STATS (always visible) -->
+    <div class="stats-row">
+      <div class="stat-card c-gold">
+        <div class="stat-glyph">🔑</div>
+        <div class="stat-label">Total Keys Issued</div>
+        <div class="stat-num" id="stat-total">—</div>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="bar-total" style="width:100%"></div></div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card c-green">
+        <div class="stat-glyph">✓</div>
+        <div class="stat-label">Active Keys</div>
+        <div class="stat-num" id="stat-active">—</div>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="bar-active"></div></div>
+        <div class="stat-sub">Currently valid</div>
+      </div>
+      <div class="stat-card c-red">
+        <div class="stat-glyph">✕</div>
+        <div class="stat-label">Revoked Keys</div>
+        <div class="stat-num" id="stat-revoked">—</div>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="bar-revoked"></div></div>
+        <div class="stat-sub">Access removed</div>
+      </div>
+      <div class="stat-card c-amber">
+        <div class="stat-glyph">⚑</div>
+        <div class="stat-label">Flagged / Suspicious</div>
+        <div class="stat-num" id="stat-flagged">—</div>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="bar-flagged"></div></div>
+        <div class="stat-sub">Needs review</div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION: LICENSE KEYS ═══ -->
+    <div id="section-keys">
+    <!-- CONTROLS -->
+    <div class="controls-row">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" type="text" id="search-box" placeholder="Search by name, email, or key…" oninput="renderTable()" />
+      </div>
+      <select class="filter-select" id="status-filter" onchange="renderTable()">
+        <option value="all">All Statuses</option>
+        <option value="active">Active Only</option>
+        <option value="revoked">Revoked Only</option>
+        <option value="flagged">Flagged Only</option>
+      </select>
+      <button class="sync-btn" id="sync-btn" onclick="syncFromSheets()">
+        <span class="sync-icon">↻</span> Sync Data
+      </button>
+      <button class="issue-btn" onclick="openIssueModal()">+ Issue New Key</button>
+    </div>
+
+    <!-- TABLE PANEL -->
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="table-title-group">
+          <div class="table-title">Issued Keys</div>
+          <div class="table-count" id="table-count">0 records</div>
+        </div>
+        <div style="font-size:11px;color:var(--dimmed);" id="last-sync-label"></div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('key')">License Key <span class="sort-arrow" id="arrow-key"></span></th>
+              <th onclick="sortBy('name')">Name <span class="sort-arrow" id="arrow-name"></span></th>
+              <th onclick="sortBy('email')">Email <span class="sort-arrow" id="arrow-email"></span></th>
+              <th onclick="sortBy('date')">Purchase Date <span class="sort-arrow" id="arrow-date"></span></th>
+              <th onclick="sortBy('logins')">Logins <span class="sort-arrow" id="arrow-logins"></span></th>
+              <th onclick="sortBy('ips')">IPs / Flags <span class="sort-arrow" id="arrow-ips"></span></th>
+              <th onclick="sortBy('status')">Status <span class="sort-arrow" id="arrow-status"></span></th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="keys-tbody"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state" style="display:none;">
+          <div class="empty-icon">◎</div>
+          <p>No matching records found.</p>
+        </div>
+      </div>
+    </div>
+    </div><!-- /section-keys -->
+
+    <!-- ═══ SECTION: ANALYTICS ═══ -->
+    <div id="section-analytics" style="display:none;">
+      <div class="section-page-header">
+        <div class="section-page-title">Analytics</div>
+        <div class="section-page-sub">Insights across all license holders</div>
+      </div>
+
+      <!-- Row 1: Status Breakdown + Login Distribution -->
+      <div class="analytics-grid-2">
+        <div class="analytics-card">
+          <div class="analytics-card-title">Status Breakdown</div>
+          <div id="analytics-status-chart" class="bar-chart-wrap"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="analytics-card-title">Login Activity Distribution</div>
+          <div id="analytics-login-chart" class="bar-chart-wrap"></div>
+        </div>
+      </div>
+
+      <!-- Row 2: Top Stats -->
+      <div class="analytics-grid-3" style="margin-top:16px;">
+        <div class="analytics-card">
+          <div class="analytics-card-title">Most Active Users</div>
+          <div id="analytics-top-users" class="analytics-list"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="analytics-card-title">Multi-IP Users</div>
+          <div id="analytics-multi-ip" class="analytics-list"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="analytics-card-title">Health Score</div>
+          <div id="analytics-health" class="health-score-wrap"></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Issuance Timeline -->
+      <div class="analytics-card" style="margin-top:16px;">
+        <div class="analytics-card-title">Keys Issued Over Time</div>
+        <div id="analytics-timeline" class="timeline-chart-wrap"></div>
+      </div>
+    </div><!-- /section-analytics -->
+
+    <!-- ═══ SECTION: ACTIVITY LOG ═══ -->
+    <div id="section-activity" style="display:none;">
+      <div class="section-page-header">
+        <div class="section-page-title">Activity Log</div>
+        <div class="section-page-sub">All admin actions and key events — session memory</div>
+      </div>
+
+      <div class="activity-controls">
+        <div class="search-wrap" style="max-width:340px;">
+          <span class="search-icon">⌕</span>
+          <input class="search-input" type="text" id="activity-search" placeholder="Filter activity…" oninput="filterActivity()" />
+        </div>
+        <button class="act-btn act-resend" onclick="exportActivityLog()" style="padding:9px 18px;font-size:11px;">⬇ Export CSV</button>
+        <button class="act-btn act-revoke" onclick="clearActivityLog()" style="padding:9px 18px;font-size:11px;">✕ Clear Log</button>
+      </div>
+
+      <div class="table-panel" style="margin-top:14px;">
+        <div class="table-header">
+          <div class="table-title-group">
+            <div class="table-title">Event Feed</div>
+            <div class="table-count" id="activity-count">0 events</div>
+          </div>
+          <div style="font-size:11px;color:var(--dimmed);">Session only — resets on logout</div>
+        </div>
+        <div id="activity-feed" class="activity-feed-wrap">
+          <div class="activity-empty">
+            <div class="empty-icon" style="font-size:28px;opacity:0.3;margin-bottom:10px;">⚡</div>
+            <p style="font-size:13px;color:var(--dimmed);">No activity recorded yet. Actions you take will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /section-activity -->
+
+    <!-- ═══ SECTION: FLAGGED ═══ -->
+    <div id="section-flagged" style="display:none;">
+      <div class="section-page-header">
+        <div class="section-page-title">Flagged Users</div>
+        <div class="section-page-sub">Users with suspicious behaviour patterns requiring review</div>
+      </div>
+      <div class="flag-grid" id="flag-cards-2"></div>
+      <div id="flag-empty-2" style="display:none;text-align:center;padding:64px 24px;color:var(--dimmed);">
+        <div style="font-size:32px;opacity:0.3;margin-bottom:12px;">✓</div>
+        <p style="font-size:14px;">No flagged users. All clear.</p>
+      </div>
+    </div><!-- /section-flagged -->
+
+  </div><!-- /dash-body -->
+  </div><!-- /main-area -->
+</div><!-- /dashboard-page -->
+
+<!-- ═══════════════ ISSUE KEY MODAL ═══════════════ -->
+<div class="modal-overlay" id="issue-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('issue-modal')">✕</button>
+    <div class="modal-title">Issue New Key</div>
+    <div class="modal-sub">Generate and assign a license key to a buyer</div>
+    <div class="modal-field">
+      <label class="modal-label">Full Name</label>
+      <input class="modal-input" type="text" id="new-name" placeholder="Buyer's full name" />
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Email Address</label>
+      <input class="modal-input" type="email" id="new-email" placeholder="buyer@example.com" />
+      <div class="modal-hint">The key will be shown here in the dashboard. Delivery is handled separately via your automation.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('issue-modal')">Cancel</button>
+      <button class="modal-submit" onclick="issueKey()">Generate & Add →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ RESEND MODAL ═══════════════ -->
+<div class="modal-overlay" id="resend-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('resend-modal')">✕</button>
+    <div class="modal-title">Resend Key</div>
+    <div class="modal-sub" id="resend-info">Resend to buyer</div>
+    <div class="modal-field">
+      <label class="modal-label">Send To</label>
+      <input class="modal-input" type="email" id="resend-email" placeholder="buyer@example.com" />
+      <div class="modal-hint">Override the delivery address if needed, or keep the original.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('resend-modal')">Cancel</button>
+      <button class="modal-submit" onclick="confirmResend()">Resend Key →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ GOOGLE SHEETS CONFIG MODAL ═══════════════ -->
+<div class="modal-overlay" id="sheets-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('sheets-modal')">✕</button>
+    <div class="modal-title">Connect Live API</div>
+    <div class="modal-sub">Enter your Apps Script URL and admin secret to enable live sync and actions</div>
+
+    <div class="sheets-setup-info">
+      <strong>Your Apps Script is already set up.</strong><br>
+      1. Open Google Sheet → Extensions → Apps Script<br>
+      2. Make sure the script is deployed as <strong>Web App</strong> → Execute as: Me → Access: Anyone<br>
+      3. Paste the deployment <code>/exec</code> URL below<br>
+      4. Enter your <code>ADD_SECRET</code> value from the script config<br>
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label">Apps Script Web App URL</label>
+      <input class="modal-input" type="url" id="sheets-url" placeholder="https://script.google.com/macros/s/…/exec" />
+      <div class="modal-hint">Your Google Apps Script deployment URL ending in /exec</div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Admin Secret (ADD_SECRET)</label>
+      <input class="modal-input" type="password" id="sheets-secret" placeholder="e.g. DSMBRA26_0310AR" autocomplete="off" />
+      <div class="modal-hint">The <code>ADD_SECRET</code> value from your Apps Script config. Required for all write actions.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('sheets-modal')">Cancel</button>
+      <button class="modal-submit" onclick="saveAndConnect()">Connect & Sync →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toast-msg"></span>
+  <button class="toast-close" onclick="hideToast()">✕</button>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   ADMIN LOGIN CREDENTIALS
+   Username and password for the dashboard login screen.
+   These are safe here because:
+   1. The whole site is protected by Vercel Password Protection
+   2. This dashboard is for your eyes only (not public)
+   Change password below whenever you want.
+════════════════════════════════════════════ */
+const CREDS = {
+  username: 'ra_admin',
+  password: 'DSMBRA@2026'
+};
+
+/* ════════════════════════════════════════════
+   LIVE API CONFIG
+   Your Google Apps Script is already pre-configured below.
+   The dashboard will auto-connect when you log in.
+   URL and secret are also saved in localStorage as backup.
+════════════════════════════════════════════ */
+
+const PREBUILT_SHEETS_URL    = 'https://script.google.com/macros/s/AKfycbzE84c1NZR0Z7dZjcabb6jf-sK52N1N8J4m1zMsnU_JNPEslpnxjVLJ6qF0KmrjzHyMAA/exec';
+const PREBUILT_SHEETS_SECRET = 'DSM_26_z8KqP4mN7xL2Ra91';
+
+let SHEETS_URL    = localStorage.getItem('dsm_sheets_url')    || PREBUILT_SHEETS_URL;
+let SHEETS_SECRET = localStorage.getItem('dsm_sheets_secret') || PREBUILT_SHEETS_SECRET;
+let isLive        = false;
+let autoRefreshTimer = null;
+
+/* Build a URL with query params */
+function apiUrl(params) {
+  const base = SHEETS_URL;
+  const qs = Object.entries(params).map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
+  return base + '?' + qs;
+}
+
+/* ─── JSONP helper ────────────────────────────────────────────────
+   Google Apps Script /exec URLs block fetch() due to CORS.
+   JSONP (script tag injection) is the correct browser-side method.
+   Apps Script calls our callback function with the JSON data.
+──────────────────────────────────────────────────────────────────── */
+let _jsonpCounter = 0;
+function jsonpCall(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__dsm_cb_' + (++_jsonpCounter);
+    const timer = setTimeout(() => {
+      delete window[cbName];
+      const s = document.getElementById('_jsonp_' + cbName);
+      if (s) s.remove();
+      reject(new Error('Timed out (15s). Make sure your Apps Script is deployed as Web App with access: Anyone.'));
+    }, 15000);
+
+    window[cbName] = function(data) {
+      clearTimeout(timer);
+      delete window[cbName];
+      const s = document.getElementById('_jsonp_' + cbName);
+      if (s) s.remove();
+      resolve(data);
+    };
+
+    const allParams = Object.assign({}, params, { callback: cbName });
+    const qs = Object.entries(allParams).map(([k,v]) => encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
+    const script = document.createElement('script');
+    script.id = '_jsonp_' + cbName;
+    script.src = SHEETS_URL + '?' + qs;
+    script.onerror = () => {
+      clearTimeout(timer);
+      delete window[cbName];
+      script.remove();
+      reject(new Error('Could not load Apps Script. URL may be wrong or not deployed as Web App.'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+function saveAndConnect() {
+  const url    = document.getElementById('sheets-url').value.trim();
+  const secret = document.getElementById('sheets-secret').value.trim();
+  if (!url || !url.startsWith('https://script.google.com/')) {
+    showToast('Please enter a valid Apps Script URL.', true);
+    return;
+  }
+  if (!secret) {
+    showToast('Please enter your ADD_SECRET value.', true);
+    return;
+  }
+  SHEETS_URL    = url;
+  SHEETS_SECRET = secret;
+  localStorage.setItem('dsm_sheets_url',    url);
+  localStorage.setItem('dsm_sheets_secret', secret);
+  closeModal('sheets-modal');
+  syncFromSheets();
+}
+
+async function syncFromSheets() {
+  if (!SHEETS_URL || !SHEETS_SECRET) {
+    showToast('Not configured. Click ⚙ Configure to enter your Apps Script URL and secret.', true);
+    openSheetsModal();
+    return;
+  }
+
+  const btn = document.getElementById('sync-btn');
+  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
+
+  try {
+    const data = await jsonpCall({ action: 'list', secret: SHEETS_SECRET });
+
+    if (!data.success) throw new Error(data.reason || 'API returned error');
+    if (!Array.isArray(data.keys)) throw new Error('Unexpected response format');
+
+    keysData = data.keys.map((row, i) => ({
+      id:     i + 1,
+      key:    String(row.key    || '').trim(),
+      name:   String(row.name   || '').trim(),
+      email:  String(row.email  || '').trim(),
+      date:   String(row.date   || new Date().toISOString()),
+      status: String(row.status || 'active').toLowerCase(),
+      logins: Number(row.loginCount) || Number(row.logins) || 0,
+      ips:    row.uniqueIPs
+               ? String(row.uniqueIPs).split('|').map(s=>s.trim()).filter(Boolean)
+               : (row.ips ? (Array.isArray(row.ips) ? row.ips : String(row.ips).split(',').map(s=>s.trim()).filter(Boolean)) : []),
+      flag:   String(row.flag   || '').trim()
+    }));
+
+    isLive = true;
+    updateSyncUI(true);
+    updateStats();
+    renderTable();
+    renderFlaggedSection();
+    showToast('✓ Synced ' + keysData.length + ' records from Google Sheets');
+
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(() => { syncFromSheets(); }, 60000);
+
+  } catch(err) {
+    console.error('Sheets sync error:', err);
+    showToast('Sync failed: ' + err.message, true);
+    updateSyncUI(false, true);
+  } finally {
+    if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
+  }
+}
+
+function updateSyncUI(live, error = false) {
+  const ind      = document.getElementById('sync-indicator');
+  const lbl      = document.getElementById('sync-label');
+  const banner   = document.getElementById('sheets-banner');
+  const lastSync = document.getElementById('last-sync-label');
+
+  ind.className = 'sync-status ' + (live ? 'live' : error ? 'error' : 'mock');
+  lbl.textContent = live ? 'Live' : error ? 'Sync Error' : 'Mock Data';
+
+  // sync topbar indicator too
+  const topbarSync = document.getElementById('topbar-sync');
+  const topbarSyncLabel = document.getElementById('topbar-sync-label');
+  if (topbarSync && topbarSyncLabel) {
+    topbarSync.className = 'sync-status ' + (live ? 'live' : error ? 'error' : 'mock');
+    topbarSyncLabel.textContent = live ? 'Live' : error ? 'Error' : 'Mock';
+  }
+
+  if (live) {
+    banner.className = 'sheets-banner connected';
+    banner.innerHTML = `
+      <span class="sheets-banner-icon">✓</span>
+      <span><strong>Connected to Google Sheets.</strong> Data is syncing live every 60 seconds.</span>
+      <button class="sheets-config-btn" onclick="openSheetsModal()">Reconfigure</button>
+    `;
+    lastSync.textContent = 'Last synced: ' + new Date().toLocaleTimeString();
+  } else if (error) {
+    banner.className = 'sheets-banner';
+    banner.innerHTML = `
+      <span class="sheets-banner-icon">⚠</span>
+      <span><strong>Sync error.</strong> Could not reach the Apps Script. Check your URL/secret and re-try.</span>
+      <button class="sheets-config-btn" onclick="openSheetsModal()">Reconfigure</button>
+    `;
+  }
+}
+
+function openSheetsModal() {
+  document.getElementById('sheets-url').value    = SHEETS_URL;
+  document.getElementById('sheets-secret').value = SHEETS_SECRET;
+  document.getElementById('sheets-modal').classList.add('open');
+}
+
+/* ════════════════════════════════════════════
+   MOCK DATA — used when Google Sheet is not connected
+════════════════════════════════════════════ */
+let keysData = [
+  { id:1, key:'DSM26-A3F1-9C2E', name:'James Harrington', email:'james.h@gmail.com',       date:'2026-01-12T09:14:00Z', status:'active',  logins:3,  ips:['192.168.1.10'], flag:'' },
+  { id:2, key:'DSM26-B7D4-1E8A', name:'Marcus Reid',      email:'marcus.reid@outlook.com',  date:'2026-01-18T14:30:00Z', status:'active',  logins:7,  ips:['10.0.0.5','172.16.2.3'], flag:'' },
+  { id:3, key:'DSM26-C2F9-5B3D', name:'Daniel Ashworth',  email:'dash.worth@protonmail.com',date:'2026-02-03T08:00:00Z', status:'flagged', logins:22, ips:['45.33.12.7','91.108.4.19','203.0.113.5','198.51.100.8'], flag:'Multiple IPs + High login count' },
+  { id:4, key:'DSM26-D8A2-7F1C', name:'Tyler Monroe',     email:'tymonroe@icloud.com',      date:'2026-02-14T16:45:00Z', status:'revoked', logins:2,  ips:['8.8.8.8'], flag:'' },
+  { id:5, key:'DSM26-E1B6-3C9F', name:'Ethan Cole',       email:'ethan.cole@yahoo.com',     date:'2026-03-01T11:20:00Z', status:'active',  logins:5,  ips:['172.217.0.1'], flag:'' },
+  { id:6, key:'DSM26-F5C3-8E2A', name:'Noah Chambers',    email:'n.chambers@gmail.com',     date:'2026-03-08T10:05:00Z', status:'active',  logins:1,  ips:['192.0.2.1'], flag:'' },
+  { id:7, key:'DSM26-G9D7-4A6B', name:'Liam Fletcher',    email:'lfletcher@hotmail.com',    date:'2026-03-20T13:30:00Z', status:'flagged', logins:18, ips:['198.51.100.1','203.0.113.10','185.220.101.2'], flag:'Suspicious IP range — possible sharing' },
+  { id:8, key:'DSM26-H4E1-2D8C', name:'Samuel Wright',    email:'sam.wright@gmail.com',     date:'2026-04-02T09:00:00Z', status:'active',  logins:4,  ips:['1.1.1.1'], flag:'' },
+];
+
+/* ════════════════════════════════════════════
+   AUTH
+════════════════════════════════════════════ */
+function doLogin() {
+  const u = document.getElementById('admin-user').value.trim();
+  const p = document.getElementById('admin-pass').value;
+  const err = document.getElementById('login-error');
+  if (u === CREDS.username && p === CREDS.password) {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('dashboard-page').style.display = 'flex';
+    err.style.display = 'none';
+    initDashboard();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('admin-pass').value = '';
+    document.getElementById('admin-pass').focus();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') {
+    doLogin();
+  }
+});
+
+function doLogout() {
+  document.getElementById('dashboard-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('admin-user').value = '';
+  document.getElementById('admin-pass').value = '';
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+function initDashboard() {
+  updateStats();
+  renderTable();
+  renderFlaggedSection();
+  startClock();
+  // Auto-connect to Google Sheets on every login
+  syncFromSheets();
+}
+
+function startClock() {
+  function tick() {
+    const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const el = document.getElementById('topbar-clock');
+    const sc = document.getElementById('sidebar-clock');
+    if (el) el.textContent = t;
+    if (sc) sc.textContent = t;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('sidebar-toggle');
+  sb.classList.toggle('collapsed');
+  btn.textContent = sb.classList.contains('collapsed') ? '›' : '‹';
+}
+
+const SECTION_NAMES = { keys: 'License Keys', analytics: 'Analytics', activity: 'Activity Log', flagged: 'Flagged Users' };
+function setSection(name, el) {
+  document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+  const target = el || (typeof event !== 'undefined' && event && event.currentTarget) || null;
+  if (target) target.classList.add('active');
+  const nameEl = document.getElementById('topbar-section-name');
+  if (nameEl) nameEl.textContent = SECTION_NAMES[name] || name;
+
+  // Hide all section panels
+  const sections = ['section-keys','section-analytics','section-activity','section-flagged'];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  if (name === 'keys') {
+    document.getElementById('section-keys').style.display = '';
+  } else if (name === 'analytics') {
+    document.getElementById('section-analytics').style.display = '';
+    renderAnalytics();
+  } else if (name === 'activity') {
+    document.getElementById('section-activity').style.display = '';
+    renderActivity();
+  } else if (name === 'flagged') {
+    document.getElementById('section-flagged').style.display = '';
+    renderFlaggedSection2();
+  }
+}
+
+/* ════════════════════════════════════════════
+   STATS
+════════════════════════════════════════════ */
+function updateStats() {
+  const total   = keysData.length;
+  const active  = keysData.filter(k => k.status === 'active').length;
+  const revoked = keysData.filter(k => k.status === 'revoked').length;
+  const flagged = keysData.filter(k => k.status === 'flagged').length;
+
+  animateNum('stat-total',   total);
+  animateNum('stat-active',  active);
+  animateNum('stat-revoked', revoked);
+  animateNum('stat-flagged', flagged);
+
+  // sidebar flag badge
+  const badge = document.getElementById('sidebar-flag-count');
+  if (badge) { badge.textContent = flagged; badge.style.display = flagged > 0 ? '' : 'none'; }
+
+  // progress bars
+  setTimeout(() => {
+    document.getElementById('bar-total').style.width   = '100%';
+    document.getElementById('bar-active').style.width  = total ? (active/total*100)+'%' : '0%';
+    document.getElementById('bar-revoked').style.width = total ? (revoked/total*100)+'%' : '0%';
+    document.getElementById('bar-flagged').style.width = total ? (flagged/total*100)+'%' : '0%';
+  }, 80);
+}
+
+function animateNum(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let current = parseInt(el.textContent) || 0;
+  const diff = target - current;
+  if (diff === 0) { el.textContent = target; return; }
+  const steps = 20;
+  const step = diff / steps;
+  let count = 0;
+  const int = setInterval(() => {
+    count++;
+    current += step;
+    el.textContent = Math.round(count < steps ? current : target);
+    if (count >= steps) clearInterval(int);
+  }, 18);
+}
+
+/* ════════════════════════════════════════════
+   TABLE
+════════════════════════════════════════════ */
+let sortKey = 'date';
+let sortDir = -1;
+
+function sortBy(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = 1; }
+  // update header arrows
+  ['key','name','email','date','logins','ips','status'].forEach(k => {
+    const el = document.getElementById('arrow-'+k);
+    if (el) el.textContent = k === sortKey ? (sortDir === 1 ? '↑' : '↓') : '';
+  });
+  renderTable();
+}
+
+function getFilteredData() {
+  const q  = (document.getElementById('search-box')?.value || '').trim().toLowerCase();
+  const sf = document.getElementById('status-filter')?.value || 'all';
+
+  return keysData
+    .filter(k => {
+      const m = !q || k.key.toLowerCase().includes(q) || k.name.toLowerCase().includes(q) || k.email.toLowerCase().includes(q);
+      return m && (sf === 'all' || k.status === sf);
+    })
+    .sort((a, b) => {
+      let va, vb;
+      if (sortKey === 'date')   { va = new Date(a.date); vb = new Date(b.date); }
+      else if (sortKey === 'logins') { va = a.logins; vb = b.logins; }
+      else if (sortKey === 'ips')    { va = a.ips.length; vb = b.ips.length; }
+      else { va = (a[sortKey]||'').toString().toLowerCase(); vb = (b[sortKey]||'').toString().toLowerCase(); }
+      return va < vb ? -sortDir : va > vb ? sortDir : 0;
+    });
+}
+
+/* ════════════════════════════════════════════
+   AVATAR HELPER
+════════════════════════════════════════════ */
+function getInitials(name) {
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  return name.slice(0,2).toUpperCase();
+}
+
+const AVATAR_PALETTES = [
+  { bg: 'rgba(200,169,75,0.18)', color: '#c8a94b', border: 'rgba(200,169,75,0.35)' },
+  { bg: 'rgba(45,186,114,0.15)', color: '#2dba72', border: 'rgba(45,186,114,0.3)' },
+  { bg: 'rgba(74,128,212,0.18)', color: '#4a80d4', border: 'rgba(74,128,212,0.35)' },
+  { bg: 'rgba(217,64,64,0.15)',  color: '#d94040', border: 'rgba(217,64,64,0.3)' },
+  { bg: 'rgba(224,122,32,0.15)', color: '#e07a20', border: 'rgba(224,122,32,0.3)' },
+  { bg: 'rgba(160,110,220,0.15)',color: '#a06edc', border: 'rgba(160,110,220,0.3)' },
+];
+function avatarPalette(name) {
+  let hash = 0;
+  for (let c of name) hash = (hash * 31 + c.charCodeAt(0)) & 0xffff;
+  return AVATAR_PALETTES[hash % AVATAR_PALETTES.length];
+}
+
+/* track which row is expanded */
+let expandedRowId = null;
+
+function toggleExpandRow(id) {
+  if (expandedRowId === id) {
+    expandedRowId = null;
+  } else {
+    expandedRowId = id;
+  }
+  renderTable();
+  // smooth scroll to expanded row
+  setTimeout(() => {
+    const el = document.getElementById('expand-inner-' + id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function renderTable() {
+  const data  = getFilteredData();
+  const tbody = document.getElementById('keys-tbody');
+  const empty = document.getElementById('empty-state');
+  document.getElementById('table-count').textContent = data.length + ' record' + (data.length !== 1 ? 's' : '');
+
+  if (data.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = data.map((k, i) => {
+    const badge = {
+      active:  `<span class="badge badge-active"><span class="badge-dot"></span>Active</span>`,
+      revoked: `<span class="badge badge-revoked"><span class="badge-dot"></span>Revoked</span>`,
+      flagged: `<span class="badge badge-flagged"><span class="badge-dot"></span>Flagged ⚑</span>`,
+    }[k.status] || '';
+
+    const ipCell = k.ips.length > 2
+      ? `<span class="ip-mono ip-warn">${k.ips[0]}</span><span class="ip-count">+${k.ips.length - 1}</span>`
+      : `<span class="ip-mono ${k.status === 'flagged' ? 'ip-warn' : ''}">${k.ips[0] || '—'}</span>`;
+
+    const dateStr = new Date(k.date).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+    const loginClass = k.logins > 15 ? 'login-high' : 'login-normal';
+
+    const revokeBtn = k.status !== 'revoked'
+      ? `<button class="act-btn act-revoke" onclick="event.stopPropagation();revokeKey(${k.id})">Revoke</button>`
+      : `<button class="act-btn act-disabled" disabled>Revoked</button>`;
+    const grantBtn = k.status === 'revoked'
+      ? `<button class="act-btn act-grant" onclick="event.stopPropagation();grantKey(${k.id})">Restore</button>` : '';
+
+    /* Avatar */
+    const pal = avatarPalette(k.name);
+    const initials = getInitials(k.name);
+    const avatarStyle = `background:${pal.bg};color:${pal.color};border-color:${pal.border};`;
+
+    /* Expand indicator */
+    const isExpanded = expandedRowId === k.id;
+    const expandIndicator = `<span style="margin-left:auto;color:var(--dimmed);font-size:11px;transition:transform 0.3s;transform:rotate(${isExpanded?'90':'0'}deg)">›</span>`;
+
+    /* Expandable detail row */
+    const allIPs = k.ips.length ? k.ips.map(ip => `<span class="expand-ip-chip">${ip}</span>`).join('') : '<span class="expand-ip-chip">—</span>';
+    const expandRow = `<tr class="expand-row"><td colspan="8"><div class="expand-inner${isExpanded?' open':''}" id="expand-inner-${k.id}">
+      <div class="expand-content">
+        <div class="expand-field"><div class="expand-field-label">Full Key</div><div class="expand-field-value highlight">${k.key}</div></div>
+        <div class="expand-field"><div class="expand-field-label">Email</div><div class="expand-field-value">${k.email}</div></div>
+        <div class="expand-field"><div class="expand-field-label">Purchase Date</div><div class="expand-field-value">${dateStr}</div></div>
+        <div class="expand-field"><div class="expand-field-label">Login Count</div><div class="expand-field-value">${k.logins}</div></div>
+        <div class="expand-field" style="grid-column:1/-1"><div class="expand-field-label">All IPs (${k.ips.length})</div><div class="expand-ip-list">${allIPs}</div></div>
+        ${k.flag ? `<div class="expand-field" style="grid-column:1/-1"><div class="expand-field-label">Flag Reason</div><div class="expand-field-value" style="color:var(--amber)">⚑ ${k.flag}</div></div>` : ''}
+        <div class="expand-actions">
+          ${revokeBtn}${grantBtn}
+          <button class="act-btn act-resend" onclick="event.stopPropagation();openResendModal(${k.id})">Resend Key</button>
+        </div>
+      </div>
+    </div></td></tr>`;
+
+    return `<tr class="data-row row-anim" style="animation-delay:${i * 0.04}s" onclick="toggleExpandRow(${k.id})">
+      <td class="cell-key">${k.key.slice(0,12)}… ${expandIndicator}</td>
+      <td><div class="cell-avatar-wrap"><div class="avatar-circle" style="${avatarStyle}">${initials}</div><div class="avatar-name-group"><div class="cell-name">${k.name}</div></div></div></td>
+      <td class="cell-email">${k.email}</td>
+      <td class="cell-date">${dateStr}</td>
+      <td><span class="${loginClass}">${k.logins}</span></td>
+      <td>${ipCell}</td>
+      <td>${badge}</td>
+      <td><div class="actions-cell"><button class="act-btn act-resend" onclick="event.stopPropagation();openResendModal(${k.id})">Resend</button></div></td>
+    </tr>${expandRow}`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   FLAGGED SECTION
+════════════════════════════════════════════ */
+function renderFlaggedSection() {
+  const flagged = keysData.filter(k => k.status === 'flagged');
+  const sec = document.getElementById('flagged-section');
+  const cards = document.getElementById('flag-cards');
+
+  if (flagged.length === 0) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+
+  cards.innerHTML = flagged.map(k => `
+    <div class="flag-card">
+      <div class="flag-card-header">
+        <div class="flag-card-name">${k.name}</div>
+        <div class="flag-card-key">${k.key}</div>
+      </div>
+      <div class="flag-detail"><span class="flag-detail-icon">✉</span>${k.email}</div>
+      <div class="flag-detail"><span class="flag-detail-icon">↺</span><strong>${k.logins} logins</strong> detected</div>
+      <div class="flag-detail"><span class="flag-detail-icon">◉</span><strong>${k.ips.length} unique IPs:</strong> ${k.ips.join(', ')}</div>
+      ${k.flag ? `<div class="flag-reason">⚑ ${k.flag}</div>` : ''}
+      <div class="flag-actions">
+        <button class="act-btn act-revoke" onclick="revokeKey(${k.id})">Revoke Access</button>
+        <button class="act-btn act-resend" onclick="openResendModal(${k.id})">Resend Key</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════════════════
+   ACTIONS — wired to live Apps Script API
+════════════════════════════════════════════ */
+async function revokeKey(id) {
+  const k = keysData.find(x => x.id === id);
+  if (!k || k.status === 'revoked') return;
+  if (!confirm(`Revoke access for ${k.name}?\n\n${k.key}\n\nThis will immediately remove their access.`)) return;
+
+  if (isLive) {
+    try {
+      const data = await jsonpCall({ action: 'revoke', key: k.key, secret: SHEETS_SECRET });
+      if (!data.success) throw new Error(data.reason || 'Revoke failed');
+      showToast('✓ Access revoked for ' + k.name + ' (saved to Sheet)');
+    } catch(err) {
+      showToast('Revoke failed: ' + err.message, true);
+      return;
+    }
+  }
+
+  k.status = 'revoked';
+  updateStats(); renderTable(); renderFlaggedSection();
+  if (!isLive) showToast('Access revoked for ' + k.name + ' (local only — not connected to Sheet)');
+}
+
+async function grantKey(id) {
+  const k = keysData.find(x => x.id === id);
+  if (!k) return;
+
+  /* The Apps Script doesn't have an explicit 'restore' endpoint,
+     but if the key was flagged, unflag restores it. For revoked keys
+     we update the sheet status directly via addKey overwrite workaround:
+     we'll use action=unflag if flagged, otherwise note the limitation. */
+  if (isLive) {
+    try {
+      // Try unflag first (works for flagged → active path)
+      const data = await jsonpCall({ action: 'unflag', key: k.key, secret: SHEETS_SECRET });
+      if (!data.success) throw new Error(data.reason || 'Restore failed');
+      showToast('✓ Access restored for ' + k.name + ' (saved to Sheet)');
+    } catch(err) {
+      showToast('Restore via API failed: ' + err.message + '. Update status manually in the Sheet.', true);
+      return;
+    }
+  }
+
+  k.status = 'active';
+  updateStats(); renderTable(); renderFlaggedSection();
+  if (!isLive) showToast('Access restored for ' + k.name + ' (local only)');
+}
+
+let resendTarget = null;
+function openResendModal(id) {
+  resendTarget = id;
+  const k = keysData.find(x => x.id === id);
+  document.getElementById('resend-info').textContent = 'Resending key to ' + k.name;
+  document.getElementById('resend-email').value = k.email;
+  document.getElementById('resend-modal').classList.add('open');
+}
+
+async function confirmResend() {
+  const email = document.getElementById('resend-email').value.trim();
+  const k = keysData.find(x => x.id === resendTarget);
+  if (!email || !k) return;
+
+  closeModal('resend-modal');
+
+  if (isLive) {
+    try {
+      const data = await jsonpCall({ action: 'addbyemail', email: email, name: k.name, secret: SHEETS_SECRET });
+      if (!data.success) throw new Error(data.reason || 'Resend failed');
+      showToast('✓ Key ' + k.key + ' resent → ' + email + ' via Apps Script email');
+    } catch(err) {
+      showToast('Resend failed: ' + err.message, true);
+    }
+  } else {
+    showToast('Key ' + k.key + ' queued → ' + email + ' (connect to Sheet to send for real)');
+  }
+}
+
+function openIssueModal() {
+  document.getElementById('new-name').value  = '';
+  document.getElementById('new-email').value = '';
+  document.getElementById('issue-modal').classList.add('open');
+}
+
+async function issueKey() {
+  const name  = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  if (!name || !email) { showToast('Name and email are required.', true); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Invalid email address.', true); return; }
+
+  const existing = keysData.find(k => k.email.toLowerCase() === email.toLowerCase() && k.status === 'active');
+  if (existing) {
+    closeModal('issue-modal');
+    showToast('Active key already exists for ' + email + '. Use Resend instead.', true);
+    return;
+  }
+
+  closeModal('issue-modal');
+
+  if (isLive) {
+    try {
+      const data = await jsonpCall({ action: 'addbyemail', name: name, email: email, secret: SHEETS_SECRET });
+      if (!data.success) throw new Error(data.reason || 'Issue failed');
+      showToast('✓ Key ' + data.key + ' issued to ' + name + ' — welcome email sent');
+      setTimeout(syncFromSheets, 1500);
+    } catch(err) {
+      showToast('Issue key failed: ' + err.message, true);
+    }
+  } else {
+    const newKey = 'DSM26-' + rHex(4) + '-' + rHex(4);
+    keysData.unshift({ id: Date.now(), key: newKey, name, email, date: new Date().toISOString(), status: 'active', logins: 0, ips: [], flag: '' });
+    updateStats(); renderTable(); renderFlaggedSection();
+    showToast('Key ' + newKey + ' added locally (connect to Sheet to persist)');
+  }
+}
+
+function rHex(n) {
+  const c = 'ABCDEF0123456789';
+  return Array.from({length:n}, () => c[Math.floor(Math.random()*c.length)]).join('');
+}
+
+/* ════════════════════════════════════════════
+   MODALS / TOASTS
+════════════════════════════════════════════ */
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 4000);
+}
+
+function hideToast() {
+  document.getElementById('toast').classList.remove('show');
+}
+
+
+/* ════════════════════════════════════════════
+   ACTIVITY LOG
+════════════════════════════════════════════ */
+let activityLog = [];
+
+function logActivity(type, msg, icon) {
+  activityLog.unshift({
+    type, msg, icon,
+    time: new Date(),
+    id: Date.now()
+  });
+  if (activityLog.length > 200) activityLog.pop();
+  // update badge if activity tab is open
+  const countEl = document.getElementById('activity-count');
+  if (countEl) countEl.textContent = activityLog.length + ' events';
+}
+
+function renderActivity() {
+  const feed = document.getElementById('activity-feed');
+  const countEl = document.getElementById('activity-count');
+  if (!feed) return;
+  const q = (document.getElementById('activity-search')?.value || '').toLowerCase();
+  const filtered = activityLog.filter(e => !q || e.msg.toLowerCase().includes(q));
+  if (countEl) countEl.textContent = activityLog.length + ' events';
+  if (filtered.length === 0) {
+    feed.innerHTML = `<div class="activity-empty"><div class="empty-icon" style="font-size:28px;opacity:0.3;margin-bottom:10px;">⚡</div><p style="font-size:13px;color:var(--dimmed);">${activityLog.length === 0 ? 'No activity recorded yet. Actions you take will appear here.' : 'No results match your filter.'}</p></div>`;
+    return;
+  }
+  feed.innerHTML = filtered.map(e => {
+    const t = e.time.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const d = e.time.toLocaleDateString('en-GB', {day:'2-digit',month:'short'});
+    const typeColors = {
+      revoke: 'color:var(--red)',
+      grant:  'color:var(--green)',
+      issue:  'color:var(--gold)',
+      resend: 'color:var(--blue)',
+      sync:   'color:var(--muted)',
+      login:  'color:var(--green)',
+      logout: 'color:var(--red)'
+    };
+    const typeBg = {
+      revoke: 'background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red)',
+      grant:  'background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green)',
+      issue:  'background:var(--gold-glow);border:1px solid rgba(200,169,75,0.25);color:var(--gold)',
+      resend: 'background:rgba(74,128,212,0.08);border:1px solid rgba(74,128,212,0.2);color:var(--blue)',
+      sync:   'background:var(--bg3);border:1px solid var(--border);color:var(--dimmed)',
+      login:  'background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green)',
+      logout: 'background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red)'
+    };
+    return `<div class="activity-entry">
+      <div class="activity-icon ${e.type}">${e.icon}</div>
+      <div class="activity-body">
+        <div class="activity-msg">${e.msg}</div>
+        <div class="activity-time">${d} · ${t}</div>
+      </div>
+      <div class="activity-type-badge" style="${typeBg[e.type]||''}">${e.type}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterActivity() { renderActivity(); }
+
+function exportActivityLog() {
+  if (!activityLog.length) { showToast('No activity to export.', true); return; }
+  const rows = [['Type','Message','Time'],...activityLog.map(e => [e.type, e.msg.replace(/<[^>]+>/g,''), e.time.toISOString()])];
+  const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'dsm_activity_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('Activity log exported as CSV.');
+}
+
+function clearActivityLog() {
+  if (!confirm('Clear all activity log entries?')) return;
+  activityLog = [];
+  renderActivity();
+  showToast('Activity log cleared.');
+}
+
+/* Patch existing actions to also log activity */
+/* NOTE: actual wrapping is done in the IIFE below where revokeKey/grantKey are already defined */
+
+/* ════════════════════════════════════════════
+   ANALYTICS SECTION
+════════════════════════════════════════════ */
+function renderAnalytics() {
+  const total   = keysData.length;
+  const active  = keysData.filter(k => k.status === 'active').length;
+  const revoked = keysData.filter(k => k.status === 'revoked').length;
+  const flagged = keysData.filter(k => k.status === 'flagged').length;
+
+  /* Status breakdown bar chart */
+  const statusEl = document.getElementById('analytics-status-chart');
+  if (statusEl) {
+    statusEl.innerHTML = [
+      { label: 'Active',  val: active,  max: total, color: 'var(--green)', pct: total ? Math.round(active/total*100) : 0 },
+      { label: 'Revoked', val: revoked, max: total, color: 'var(--red)',   pct: total ? Math.round(revoked/total*100) : 0 },
+      { label: 'Flagged', val: flagged, max: total, color: 'var(--amber)', pct: total ? Math.round(flagged/total*100) : 0 },
+    ].map(r => `<div class="bar-row">
+      <div class="bar-row-label">${r.label} <span style="color:var(--dimmed);font-size:10px;">(${r.pct}%)</span></div>
+      <div class="bar-row-track"><div class="bar-row-fill" style="width:0%;background:${r.color}" data-target="${r.pct}"></div></div>
+      <div class="bar-row-val">${r.val}</div>
+    </div>`).join('');
+    setTimeout(() => statusEl.querySelectorAll('.bar-row-fill').forEach(el => { el.style.width = el.dataset.target + '%'; }), 80);
+  }
+
+  /* Login distribution */
+  const loginBuckets = [
+    { label: '0 logins', vals: keysData.filter(k => k.logins === 0) },
+    { label: '1–5',      vals: keysData.filter(k => k.logins >= 1 && k.logins <= 5) },
+    { label: '6–10',     vals: keysData.filter(k => k.logins >= 6 && k.logins <= 10) },
+    { label: '11–20',    vals: keysData.filter(k => k.logins >= 11 && k.logins <= 20) },
+    { label: '20+',      vals: keysData.filter(k => k.logins > 20) },
+  ];
+  const maxBucket = Math.max(...loginBuckets.map(b => b.vals.length), 1);
+  const loginEl = document.getElementById('analytics-login-chart');
+  if (loginEl) {
+    loginEl.innerHTML = loginBuckets.map(b => `<div class="bar-row">
+      <div class="bar-row-label">${b.label}</div>
+      <div class="bar-row-track"><div class="bar-row-fill" style="width:0%;background:var(--blue)" data-target="${Math.round(b.vals.length/maxBucket*100)}"></div></div>
+      <div class="bar-row-val">${b.vals.length}</div>
+    </div>`).join('');
+    setTimeout(() => loginEl.querySelectorAll('.bar-row-fill').forEach(el => { el.style.width = el.dataset.target + '%'; }), 120);
+  }
+
+  /* Top active users */
+  const sorted = [...keysData].filter(k=>k.status==='active').sort((a,b) => b.logins - a.logins).slice(0,5);
+  const topUsersEl = document.getElementById('analytics-top-users');
+  if (topUsersEl) {
+    topUsersEl.innerHTML = sorted.length === 0 ? '<div style="color:var(--dimmed);font-size:13px;">No active users.</div>' : sorted.map((k, i) => `
+      <div class="analytics-list-item">
+        <div class="analytics-list-rank">#${i+1}</div>
+        <div class="analytics-list-name">${k.name}</div>
+        <div class="analytics-list-val">${k.logins} logins</div>
+      </div>`).join('');
+  }
+
+  /* Multi-IP users */
+  const multiIp = [...keysData].filter(k => k.ips.length > 1).sort((a,b) => b.ips.length - a.ips.length).slice(0,5);
+  const multiIpEl = document.getElementById('analytics-multi-ip');
+  if (multiIpEl) {
+    multiIpEl.innerHTML = multiIp.length === 0
+      ? '<div style="color:var(--green);font-size:13px;">✓ No multi-IP users detected.</div>'
+      : multiIp.map((k, i) => `
+        <div class="analytics-list-item">
+          <div class="analytics-list-rank">#${i+1}</div>
+          <div class="analytics-list-name">${k.name}</div>
+          <div class="analytics-list-val" style="background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber);">${k.ips.length} IPs</div>
+        </div>`).join('');
+  }
+
+  /* Health score */
+  const revokeRate = total ? revoked/total : 0;
+  const flagRate   = total ? flagged/total : 0;
+  const shareRate  = total ? keysData.filter(k=>k.ips.length > 2).length / total : 0;
+  const score = Math.max(0, Math.min(100, Math.round(100 - (revokeRate*30) - (flagRate*40) - (shareRate*30))));
+  const healthEl = document.getElementById('analytics-health');
+  if (healthEl) {
+    const grade = score >= 85 ? { label:'Excellent', color:'var(--green)', bg:'var(--green-bg)', bd:'var(--green-bd)' }
+                : score >= 65 ? { label:'Good',      color:'var(--gold)',  bg:'var(--gold-glow)', bd:'rgba(200,169,75,0.3)' }
+                : score >= 40 ? { label:'Fair',      color:'var(--amber)', bg:'var(--amber-bg)', bd:'var(--amber-bd)' }
+                :               { label:'At Risk',   color:'var(--red)',   bg:'var(--red-bg)',   bd:'var(--red-bd)' };
+    healthEl.innerHTML = `
+      <div class="health-score-ring" style="border:3px solid ${grade.color};box-shadow:0 0 28px ${grade.color}25;color:${grade.color};">${score}</div>
+      <div class="health-score-label">Overall Health</div>
+      <div class="health-grade" style="background:${grade.bg};border:1px solid ${grade.bd};color:${grade.color};">${grade.label}</div>
+      <div style="font-size:11px;color:var(--dimmed);text-align:center;line-height:1.6;">Based on revocation rate,<br>flag rate & IP sharing</div>`;
+  }
+
+  /* Timeline — keys by month */
+  const monthMap = {};
+  keysData.forEach(k => {
+    const d = new Date(k.date);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    monthMap[key] = (monthMap[key]||0) + 1;
+  });
+  const months = Object.keys(monthMap).sort();
+  const maxMonth = Math.max(...Object.values(monthMap), 1);
+  const timelineEl = document.getElementById('analytics-timeline');
+  if (timelineEl) {
+    timelineEl.innerHTML = months.length === 0 ? '<div style="color:var(--dimmed);font-size:13px;">No data.</div>' :
+      months.map(m => {
+        const pct = Math.round(monthMap[m]/maxMonth*100);
+        const [yr, mo] = m.split('-');
+        const label = new Date(yr, mo-1, 1).toLocaleDateString('en-GB', {month:'short', year:'2-digit'});
+        return `<div class="timeline-col">
+          <div class="timeline-bar-wrap">
+            <div class="timeline-bar" style="height:${pct}%" title="${monthMap[m]} keys in ${label}"></div>
+          </div>
+          <div class="timeline-label">${label}</div>
+        </div>`;
+      }).join('');
+  }
+}
+
+/* ════════════════════════════════════════════
+   FLAGGED (dedicated section)
+════════════════════════════════════════════ */
+function renderFlaggedSection2() {
+  const flagged = keysData.filter(k => k.status === 'flagged');
+  const cards = document.getElementById('flag-cards-2');
+  const empty = document.getElementById('flag-empty-2');
+  if (!cards) return;
+  if (flagged.length === 0) {
+    cards.style.display = 'none';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  cards.style.display = '';
+  cards.innerHTML = flagged.map(k => `
+    <div class="flag-card">
+      <div class="flag-card-header">
+        <div class="flag-card-name">${k.name}</div>
+        <div class="flag-card-key">${k.key}</div>
+      </div>
+      <div class="flag-detail"><span class="flag-detail-icon">✉</span>${k.email}</div>
+      <div class="flag-detail"><span class="flag-detail-icon">↺</span><strong>${k.logins} logins</strong> detected</div>
+      <div class="flag-detail"><span class="flag-detail-icon">◉</span><strong>${k.ips.length} unique IPs:</strong> ${k.ips.join(', ')}</div>
+      ${k.flag ? `<div class="flag-reason">⚑ ${k.flag}</div>` : ''}
+      <div class="flag-actions">
+        <button class="act-btn act-revoke" onclick="revokeKey(${k.id})">Revoke Access</button>
+        <button class="act-btn act-resend" onclick="openResendModal(${k.id})">Resend Key</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════════════════
+   PATCH: WRAP revokeKey / grantKey / issueKey
+   to log activity
+════════════════════════════════════════════ */
+(function() {
+  const orig_revokeKey = revokeKey;
+  window.revokeKey = async function(id) {
+    const k = keysData.find(x => x.id === id);
+    if (k) logActivity('revoke', `Revoked access for <strong>${k.name}</strong> (${k.email})`, '✕');
+    await orig_revokeKey(id);
+    renderFlaggedSection2();
+  };
+
+  const orig_grantKey = grantKey;
+  window.grantKey = async function(id) {
+    const k = keysData.find(x => x.id === id);
+    if (k) logActivity('grant', `Restored access for <strong>${k.name}</strong> (${k.email})`, '✓');
+    await orig_grantKey(id);
+    renderFlaggedSection2();
+  };
+
+  const orig_syncFromSheets = syncFromSheets;
+  window.syncFromSheets = async function() {
+    logActivity('sync', 'Manual sync triggered from Google Sheets', '↻');
+    await orig_syncFromSheets();
+  };
+})();
+
+/* Log login/logout */
+const _origDoLogin = doLogin;
+window.doLogin = function() {
+  const u = document.getElementById('admin-user').value.trim();
+  const p = document.getElementById('admin-pass').value;
+  if (u === CREDS.username && p === CREDS.password) {
+    logActivity('login', `Admin <strong>${u}</strong> signed in`, '⊕');
+  }
+  _origDoLogin();
+};
+
+const _origDoLogout = doLogout;
+window.doLogout = function() {
+  logActivity('logout', 'Admin signed out', '⎋');
+  _origDoLogout();
+};
+
+</script>
+</body>
+</html>
