@@ -3182,7 +3182,22 @@ window.doLogout = function() {
   logActivity('logout', 'Admin signed out', '⎋');
   _origDoLogout();
 };
+function doLogin() {
+  const user = document.getElementById('admin-user').value.trim();
+  const pass = document.getElementById('admin-pass').value;
 
+  if (user === 'ra_admin' && pass === 'DSMBRA@2026') {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('dashboard-page').style.display = 'flex';
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  document.getElementById('dashboard-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
 </script>
 <div id="section-visitors" class="section-content" style="display:none; width:100%;">
 
