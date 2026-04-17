@@ -2438,16 +2438,7 @@ let keysData = [
 /* ════════════════════════════════════════════
    AUTH
 ════════════════════════════════════════════ */
-function doLogin() {
-  const u = document.getElementById('admin-user').value.trim();
-  const p = document.getElementById('admin-pass').value;
-  const err = document.getElementById('login-error');
-  if (u === CREDS.username && p === CREDS.password) {
-    document.getElementById('login-page').style.display = 'none';
-    document.getElementById('dashboard-page').style.display = 'flex';
-    err.style.display = 'none';
-    initDashboard();
-  } else {
+ else {
     err.style.display = 'block';
     document.getElementById('admin-pass').value = '';
     document.getElementById('admin-pass').focus();
@@ -2460,12 +2451,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-function doLogout() {
-  document.getElementById('dashboard-page').style.display = 'none';
-  document.getElementById('login-page').style.display = 'flex';
-  document.getElementById('admin-user').value = '';
-  document.getElementById('admin-pass').value = '';
-}
+
 
 /* ════════════════════════════════════════════
    INIT
@@ -3167,28 +3153,28 @@ function renderFlaggedSection2() {
 })();
 
 /* Log login/logout */
-const _origDoLogin = doLogin;
-window.doLogin = function() {
+
+
+
+ else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+
+
+function doLogin() {
   const u = document.getElementById('admin-user').value.trim();
   const p = document.getElementById('admin-pass').value;
-  if (u === CREDS.username && p === CREDS.password) {
-    logActivity('login', `Admin <strong>${u}</strong> signed in`, '⊕');
-  }
-  _origDoLogin();
-};
 
-const _origDoLogout = doLogout;
-window.doLogout = function() {
-  logActivity('logout', 'Admin signed out', '⎋');
-  _origDoLogout();
-};
-function doLogin() {
-  const user = document.getElementById('admin-user').value.trim();
-  const pass = document.getElementById('admin-pass').value;
-
-  if (user === 'ra_admin' && pass === 'DSMBRA@2026') {
+  if (u === 'ra_admin' && p === 'DSMBRA@2026') {
     document.getElementById('login-page').style.display = 'none';
     document.getElementById('dashboard-page').style.display = 'flex';
+
+    if (typeof logActivity === 'function') {
+      logActivity('login', `Admin <strong>${u}</strong> signed in`, '⎋');
+    }
+
   } else {
     document.getElementById('login-error').style.display = 'block';
   }
@@ -3197,7 +3183,12 @@ function doLogin() {
 function doLogout() {
   document.getElementById('dashboard-page').style.display = 'none';
   document.getElementById('login-page').style.display = 'flex';
+
+  if (typeof logActivity === 'function') {
+    logActivity('logout', 'Admin signed out', '⎋');
+  }
 }
+
 </script>
 <div id="section-visitors" class="section-content" style="display:none; width:100%;">
 
