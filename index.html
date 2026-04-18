@@ -2539,6 +2539,18 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
           <div class="v3-kpi-value" style="color:#fbbf24;" id="va-kpi-scroll">—</div>
           <div class="v3-kpi-sub" id="va-kpi-scroll-sub"></div>
         </div>
+        <div class="v3-kpi" style="--kc:#34d399;">
+          <div class="v3-kpi-ico">⏱</div>
+          <div class="v3-kpi-label">Time to First CTA</div>
+          <div class="v3-kpi-value" style="color:#34d399;" id="va-kpi-firstcta">—</div>
+          <div class="v3-kpi-sub" id="va-kpi-firstcta-sub"></div>
+        </div>
+        <div class="v3-kpi" style="--kc:#fb923c;">
+          <div class="v3-kpi-ico">↑</div>
+          <div class="v3-kpi-label">Backscrolls</div>
+          <div class="v3-kpi-value" style="color:#fb923c;" id="va-kpi-backscroll">—</div>
+          <div class="v3-kpi-sub" id="va-kpi-backscroll-sub"></div>
+        </div>
       </div>
 
       <!-- ── Instagram Bio Panel ── -->
@@ -2624,6 +2636,32 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
       <div class="v3-grid-2" style="margin-bottom:20px;">
         <div class="v3-card"><div class="v3-card-header"><span class="v3-card-title">Rage clicks &amp; friction points</span></div><div class="v3-card-body" id="va-rage-clicks"><div class="v3-placeholder">—</div></div></div>
         <div class="v3-card"><div class="v3-card-header"><span class="v3-card-title">Browser distribution</span></div><div class="v3-card-body" id="va2-browsers"><div class="v3-placeholder">—</div></div></div>
+      </div>
+
+      <!-- ── Buying Signals Row (NEW v2) ── -->
+      <div class="v3-section-label">Buying signals &amp; intent</div>
+      <div class="v3-grid-3" style="margin-bottom:20px;">
+        <div class="v3-card">
+          <div class="v3-card-header">
+            <span class="v3-card-title">Backscroll events</span>
+            <span class="v3-card-meta" style="color:#fb923c;">↑ Re-read signal</span>
+          </div>
+          <div class="v3-card-body" id="va-backscroll"><div class="v3-placeholder">—</div></div>
+        </div>
+        <div class="v3-card">
+          <div class="v3-card-header">
+            <span class="v3-card-title">Time-to-first CTA</span>
+            <span class="v3-card-meta" style="color:#34d399;">Decision speed</span>
+          </div>
+          <div class="v3-card-body" id="va-firstcta"><div class="v3-placeholder">—</div></div>
+        </div>
+        <div class="v3-card">
+          <div class="v3-card-header">
+            <span class="v3-card-title">Content copies</span>
+            <span class="v3-card-meta" style="color:#a78bfa;">High engagement</span>
+          </div>
+          <div class="v3-card-body" id="va-copies"><div class="v3-placeholder">—</div></div>
+        </div>
       </div>
 
       <!-- ── Sessions Table ── -->
@@ -4059,7 +4097,7 @@ function doLogout() {
 let VISITOR_ANALYTICS_URL = '';
 try { VISITOR_ANALYTICS_URL = localStorage.getItem('dsm_va_url') || ''; } catch(e) {}
 let vaFilter = 'today';
-let vaData = { sessions:[], events:[], cta:[], scroll:[], sections:[], exits:[], rage:[], daily:[] };
+let vaData = { sessions:[], events:[], cta:[], scroll:[], sections:[], exits:[], rage:[], daily:[], video:[], copy:[], firstcta:[], backscroll:[] };
 
 /* ── Connect ────────────────────────────────────────── */
 function connectVisitorAnalytics() {
@@ -4129,7 +4167,7 @@ async function loadVisitorData() {
   if (!VISITOR_ANALYTICS_URL) return;
   va2Status('loading', 'Loading data…');
   try {
-    const [sessions,events,cta,scroll,sections,exits,rage,daily] = await Promise.all([
+    const [sessions,events,cta,scroll,sections,exits,rage,daily,video,copy,firstcta,backscroll] = await Promise.all([
       vaJsonp({action:'dump',sheet:'Sessions'}),
       vaJsonp({action:'dump',sheet:'Events'}),
       vaJsonp({action:'dump',sheet:'CTAClicks'}),
@@ -4138,8 +4176,12 @@ async function loadVisitorData() {
       vaJsonp({action:'dump',sheet:'ExitIntent'}),
       vaJsonp({action:'dump',sheet:'RageClicks'}),
       vaJsonp({action:'dump',sheet:'DailySummary'}),
+      vaJsonp({action:'dump',sheet:'VideoEvents'}).catch(()=>[]),
+      vaJsonp({action:'dump',sheet:'CopyEvents'}).catch(()=>[]),
+      vaJsonp({action:'dump',sheet:'FirstCTAClicks'}).catch(()=>[]),
+      vaJsonp({action:'dump',sheet:'BackscrollEvents'}).catch(()=>[]),
     ]);
-    vaData = {sessions,events,cta,scroll,sections,exits,rage,daily};
+    vaData = {sessions,events,cta,scroll,sections,exits,rage,daily,video,copy,firstcta,backscroll};
     va2Status('ok', '✓ ' + sessions.length + ' total sessions');
     const upd = document.getElementById('v3-last-updated');
     if (upd) upd.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
@@ -4151,15 +4193,19 @@ async function loadVisitorData() {
 
 /* ── Master render ───────────────────────────────── */
 function renderVACharts() {
-  const S  = filterByDate(vaData.sessions || []);
-  const C  = filterByDate(vaData.cta      || []);
-  const SC = filterByDate(vaData.scroll   || []);
-  const SE = filterByDate(vaData.sections || []);
-  const EX = filterByDate(vaData.exits    || []);
-  const RA = filterByDate(vaData.rage     || []);
+  const S  = filterByDate(vaData.sessions  || []);
+  const C  = filterByDate(vaData.cta       || []);
+  const SC = filterByDate(vaData.scroll    || []);
+  const SE = filterByDate(vaData.sections  || []);
+  const EX = filterByDate(vaData.exits     || []);
+  const RA = filterByDate(vaData.rage      || []);
   const DL = vaData.daily || [];
+  const VI = filterByDate(vaData.video     || []);  // v2
+  const CP = filterByDate(vaData.copy      || []);  // v2
+  const FC = filterByDate(vaData.firstcta  || []);  // v2
+  const BS = filterByDate(vaData.backscroll|| []);  // v2
 
-  va2RenderKPIs(S, C, SC, EX);
+  va2RenderKPIs(S, C, SC, EX, FC, BS);
   v3RenderInstagramPanel(S, C, SC, EX);
   va2RenderTimeline(DL);
   va2RenderSources(S);
@@ -4175,11 +4221,12 @@ function renderVACharts() {
   va2RenderRageClicks(RA);
   va2RenderBrowsers(S);
   va2RenderSessionsTable(S);
+  va2RenderBuyingSignals(S, BS, FC, CP, VI);  // v2: new panel
   va2RenderInsights(S, C, SC, EX, RA, SE);
 }
 
 /* ── KPIs ───────────────────────────────────────── */
-function va2RenderKPIs(S,C,SC,EX) {
+function va2RenderKPIs(S,C,SC,EX,FC,BS) {
   const uniq = new Set(S.map(r=>r[2]||r.VisitorID)).size;
   const newV = S.filter(r=>(r[11]||r.IsNew)==='yes').length;
   const times = S.map(r=>parseInt(r[15]||r.TotalSeconds||0,10)).filter(n=>n>0);
@@ -4202,6 +4249,17 @@ function va2RenderKPIs(S,C,SC,EX) {
   va2set('va-kpi-ig-sub', igPct+'% of all traffic');
   va2set('va-kpi-scroll', avgSc+'%');
   va2set('va-kpi-scroll-sub', scVals.length+' depth events');
+
+  // v2: First CTA time KPI
+  const fcTimes = (FC||[]).map(r=>parseInt(r[5]||r.SecsToFirstCta||0,10)).filter(n=>n>0);
+  const avgFc = fcTimes.length ? Math.round(fcTimes.reduce((a,b)=>a+b,0)/fcTimes.length) : 0;
+  va2set('va-kpi-firstcta', avgFc > 0 ? va2fmt(avgFc) : '—');
+  va2set('va-kpi-firstcta-sub', fcTimes.length + ' sessions clicked CTA');
+
+  // v2: Backscroll KPI (buying signal)
+  const bsPct = S.length ? Math.round((BS||[]).length / S.length * 100) : 0;
+  va2set('va-kpi-backscroll', (BS||[]).length);
+  va2set('va-kpi-backscroll-sub', bsPct+'% of sessions — buyers re-read');
 }
 
 /* ── Instagram detection helper ─────────────────── */
@@ -4814,6 +4872,9 @@ function copyForClaude() {
   const EX = filterByDate(vaData.exits     || []);
   const RA = filterByDate(vaData.rage      || []);
   const SE = filterByDate(vaData.sections  || []);
+  const BS = filterByDate(vaData.backscroll|| []);  // v2
+  const FC = filterByDate(vaData.firstcta  || []);  // v2
+  const CP = filterByDate(vaData.copy      || []);  // v2
 
   const summary = buildAnalyticsSummary(S,C,SC,EX,RA,SE);
   if (!summary) { showToast('No data to copy yet.', true); return; }
@@ -4911,6 +4972,11 @@ FRICTION & EXITS
 • Exit scroll depth breakdown:
 ${exitLines}
 
+BUYING SIGNALS (NEW)
+• Backscroll events: ${BS.length} visitors (${S.length ? Math.round(BS.length/S.length*100) : 0}% of sessions) scrolled back up — strong re-read / buying intent signal
+• Avg time-to-first CTA click: ${(()=>{ const t=FC.map(r=>parseInt(r[5]||r.SecsToFirstCta||0,10)).filter(n=>n>0); return t.length ? Math.round(t.reduce((a,b)=>a+b,0)/t.length)+'s ('+t.length+' sessions)' : 'no data yet'; })()}
+• Content copy events: ${CP.length} times visitors copied text from the page (high engagement signal)
+
 --- END OF DATA ---
 
 Please be specific and direct. Reference the actual numbers in your analysis. Focus on what matters most for converting visitors into buyers of a high-ticket course.`;
@@ -4994,6 +5060,79 @@ function va2fmt(secs) {
   if(secs<60) return secs+'s';
   const m=Math.floor(secs/60),s=secs%60;
   return m+'m'+(s>0?' '+s+'s':'');
+}
+
+/* ── Buying Signals Panel (v2 NEW) ──────────────────────── */
+function va2RenderBuyingSignals(S, BS, FC, CP, VI) {
+  const fmt = va2fmt;
+
+  // ── Backscroll panel ──
+  const bsEl = document.getElementById('va-backscroll');
+  if (bsEl) {
+    if (!BS || !BS.length) {
+      bsEl.innerHTML = '<div class="v3-placeholder">No backscroll events yet</div>';
+    } else {
+      const bsPct = S.length ? Math.round(BS.length / S.length * 100) : 0;
+      // What depth did they scroll back from?
+      const depths = BS.map(r => parseInt(String(r[4]||r.DeepestReached||'0').replace('%',''),10)).filter(n=>!isNaN(n));
+      const avgDepth = depths.length ? Math.round(depths.reduce((a,b)=>a+b,0)/depths.length) : 0;
+      bsEl.innerHTML = `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:28px;font-weight:800;color:#fb923c;line-height:1;">${BS.length}</div>
+          <div style="font-size:11px;color:var(--v3-muted);margin-top:4px;">${bsPct}% of all sessions scrolled back up</div>
+        </div>
+        <div style="font-size:11px;color:var(--v3-muted);line-height:1.7;padding:10px 12px;background:rgba(251,146,60,0.08);border-left:2px solid #fb923c;border-radius:2px;">
+          Avg deepest point before backscrolling: <strong style="color:#fb923c;">${avgDepth}%</strong><br>
+          These visitors are re-reading your page — strong buying intent signal.
+        </div>`;
+    }
+  }
+
+  // ── First CTA time distribution ──
+  const fcEl = document.getElementById('va-firstcta');
+  if (fcEl) {
+    if (!FC || !FC.length) {
+      fcEl.innerHTML = '<div class="v3-placeholder">No first CTA data yet</div>';
+    } else {
+      const times = FC.map(r=>parseInt(r[5]||r.SecsToFirstCta||0,10)).filter(n=>n>0);
+      const avg = times.length ? Math.round(times.reduce((a,b)=>a+b,0)/times.length) : 0;
+      const fast  = times.filter(t=>t < 60).length;
+      const mid   = times.filter(t=>t >= 60 && t < 180).length;
+      const slow  = times.filter(t=>t >= 180).length;
+      const max   = Math.max(fast, mid, slow, 1);
+      fcEl.innerHTML = `
+        <div style="margin-bottom:10px;font-size:11px;color:var(--v3-muted);">Avg: <strong style="color:#34d399;">${fmt(avg)}</strong> to first CTA click (${times.length} sessions)</div>
+        ${[['Under 1 min','fast',fast,'#4ade80'],['1–3 min','mid',mid,'#fbbf24'],['Over 3 min','slow',slow,'#f87171']].map(([lbl,,n,c])=>`
+          <div class="va2-bar-row">
+            <div class="va2-bar-label" style="width:90px;">${lbl}</div>
+            <div class="va2-bar-track"><div class="va2-bar-fill" style="background:${c};width:0;" data-target="${Math.round(n/max*100)}"></div></div>
+            <div class="va2-bar-val" style="color:${c};">${n}</div>
+          </div>`).join('')}`;
+      setTimeout(()=>{ fcEl.querySelectorAll('.va2-bar-fill').forEach(b=>b.style.width=b.dataset.target+'%'); }, 80);
+    }
+  }
+
+  // ── Content copies ──
+  const cpEl = document.getElementById('va-copies');
+  if (cpEl) {
+    if (!CP || !CP.length) {
+      cpEl.innerHTML = '<div class="v3-placeholder">No copy events yet</div>';
+    } else {
+      // What scroll% do people copy at?
+      const copyDepths = CP.map(r=>parseInt(String(r[4]||r.ScrollPct||'0').replace('%',''),10)).filter(n=>!isNaN(n));
+      const avgCopyDepth = copyDepths.length ? Math.round(copyDepths.reduce((a,b)=>a+b,0)/copyDepths.length) : 0;
+      const uniqCopiers = new Set(CP.map(r=>r[2]||r.VisitorID||'')).size;
+      cpEl.innerHTML = `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:28px;font-weight:800;color:#a78bfa;line-height:1;">${CP.length}</div>
+          <div style="font-size:11px;color:var(--v3-muted);margin-top:4px;">${uniqCopiers} unique visitors copied text</div>
+        </div>
+        <div style="font-size:11px;color:var(--v3-muted);line-height:1.7;padding:10px 12px;background:rgba(167,139,250,0.08);border-left:2px solid #a78bfa;border-radius:2px;">
+          Avg scroll position when copying: <strong style="color:#a78bfa;">${avgCopyDepth}%</strong><br>
+          People copying your content are highly engaged readers.
+        </div>`;
+    }
+  }
 }
 
 
